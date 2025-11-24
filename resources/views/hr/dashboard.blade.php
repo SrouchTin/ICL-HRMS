@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>HR Dashboard | {{ config('app.name') }}</title>
+    <title>HR Dashboard</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,13 +18,17 @@
     <div class="w-64 bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col">
         <div class="p-6 text-center border-b border-indigo-700">
             <h2 class="text-2xl font-bold">HR Dashboard</h2>
-            <p class="text-indigo-200 text-sm mt-1">{{ config('app.name') }}</p>
+            
         </div>
 
         <nav class="flex-1 px-4 py-6 space-y-2">
             <a href="{{ route('hr.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white font-medium">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
+            </a>
+            <a href="{{ route('hr.employees.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
+                <i class="fas fa-users"></i>
+                <span>Employees</span>
             </a>
             <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
                 <i class="fas fa-clock"></i>
@@ -33,11 +37,7 @@
             <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
                 <i class="fas fa-calendar-check"></i>
                 <span>Leave Requests</span>
-                <span class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full">12</span>
-            </a>
-            <a href="{{ route('employees.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-users"></i>
-                <span>Employees</span>
+                
             </a>
             <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
                 <i class="fas fa-route"></i>

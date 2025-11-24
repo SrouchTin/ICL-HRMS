@@ -7,17 +7,19 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    public function handle($request, Closure $next, $role)
-    {
-        if (!Auth::check()) {
-            return redirect('/login');
-        }
-
-        if (Auth::user()->role->name !== $role) {
-            abort(403, 'Unauthorized Access');
-        }
-
-        return $next($request);
+   public function handle($request, Closure $next, $role)
+{
+    if (!Auth::check()) {
+        return redirect('/login');
     }
+
+    $userRole = Auth::user()->role?->name;
+
+    if ($userRole !== $role) {
+        abort(403, 'អ្នកមិនមានសិទ្ធិចូលទំព័រនេះទេ។');
+    }
+
+    return $next($request);
+}
 }
 
