@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => App\Http\Middleware\RoleMiddleware::class,
             'branch' => App\Http\Middleware\BranchMiddleware::class,
         ]);
+        $middleware->append(\App\Http\Middleware\IncreaseInputLimits::class);
+
+        // ឬបើចង់ដាក់តែ route hr ទេ (កាន់តែល្អ)
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\IncreaseInputLimits::class,
+        ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {

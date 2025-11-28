@@ -23,6 +23,9 @@ class PersonalInfo extends Model
         'religion',
         'bank_account_number',
         'tax_number',
+        'joining_date',
+        'effective_date',
+        'end_date'
     ];
 
     // =============================

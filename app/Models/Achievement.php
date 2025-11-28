@@ -12,7 +12,7 @@ class Achievement extends Model
 
     protected $fillable = [
         'employee_id',
-        'salutation',
+        'title',
         'year_awarded',
         'country',
         'program_name',

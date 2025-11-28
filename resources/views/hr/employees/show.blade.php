@@ -8,6 +8,7 @@
     <title>{{ $employee->user->name ?? 'Employee' }} - Profile | {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
         .rotate-180 {
             transform: rotate(180deg);
@@ -17,49 +18,11 @@
 
 <body class="bg-gray-50 font-sans antialiased">
 
-    <div class="flex h-screen overflow-hidden">
+    <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
 
-        <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col">
-            <div class="p-6 text-center border-b border-indigo-700">
-                <h2 class="text-2xl font-bold">HR Dashboard</h2>
-            </div>
-            <nav class="flex-1 px-4 py-6 space-y-2">
-                <a href="{{ route('hr.dashboard') }}"
-                    class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-                </a>
-                <a href="{{ route('hr.employees.index') }}"
-                    class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 font-bold">
-                    <i class="fas fa-users"></i><span>Employees</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-clock"></i><span>Attendance</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-calendar-check"></i><span>Leave Requests</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-route"></i><span>Missions</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-car"></i><span>Company Vehicles</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-money-bill-wave"></i><span>Payroll</span>
-                </a>
-            </nav>
-            <div class="p-4 border-t border-indigo-700">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button
-                        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-                    </button>
-                </form>
-            </div>
-        </aside>
-
+        {{-- Sidebar --}}
+            @include('layout.hrSidebar')
+        {{-- Sidebar --}}
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-sm border-b border-gray-200 px-8 py-5 flex justify-between items-center">
@@ -165,9 +128,9 @@
                                                 <td class="{{ $tableCell }}">{{ $info?->religion ?? '-' }}</td>
                                                 <td class="{{ $tableCell }}">{{ $info?->blood_group ?? '-' }}</td>
                                                 <td class="{{ $tableCell }}">{{ $info?->bank_account_number ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->joining_data ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->effective_data ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->end_data ?? '-' }}</td>
+                                                <td class="{{ $tableCell }}">{{ $info?->joining_date ?? '-' }}</td>
+                                                <td class="{{ $tableCell }}">{{ $info?->effective_date ?? '-' }}</td>
+                                                <td class="{{ $tableCell }}">{{ $info?->end_date ?? '-' }}</td>
                                                 <td class="{{ $tableCell }}">{{ $info?->contract_type ?? '-' }}</td>
                                                 <td class="{{ $tableCell }}">{{ $info?->employee_type ?? '-' }}</td>
                                             </tr>
@@ -192,7 +155,8 @@
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-identifications"></i>
                             </div>
                             <div class="p-8 hidden overflow-x-auto" id="content-identifications">
-                                @if($employee->identifications->count() >= 0)
+                                {{-- កែពី $employee->identifications->count() → ប្រើ identification (hasOne) --}}
+                                @if($employee->identification)
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="{{ $tableHead }}">
                                             <tr>
@@ -203,14 +167,15 @@
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->identifications as $id)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $id->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $id->identification_type }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $id->identification_number }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $id->expiration_date }}</td>
-                                                </tr>
-                                            @endforeach
+                                            <tr>
+                                                <td class="{{ $tableCell }}">{{ $employee->identification->id }}</td>
+                                                <td class="{{ $tableCell }}">
+                                                    {{ $employee->identification->identification_type }}</td>
+                                                <td class="{{ $tableCell }}">
+                                                    {{ $employee->identification->identification_number }}</td>
+                                                <td class="{{ $tableCell }}">
+                                                    {{ $employee->identification->expiration_date }}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 @else
@@ -228,7 +193,8 @@
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-addresses"></i>
                             </div>
                             <div class="p-8 hidden overflow-x-auto" id="content-addresses">
-                                @if($employee->addresses->count() >= 0)
+                                {{-- កែពី $employee->addresses->count() → ប្រើ address (hasOne) --}}
+                                @if($employee->address)
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="{{ $tableHead }}">
                                             <tr>
@@ -241,18 +207,15 @@
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->addresses as $addr)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $addr->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $addr->address }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $addr->city }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $addr->province }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $addr->state ?? '' }}
-                                                        {{ $addr->postal_code }}
-                                                    </td>
-                                                    <td class="{{ $tableCell }}">{{ $addr->country }}</td>
-                                                </tr>
-                                            @endforeach
+                                            <tr>
+                                                <td class="{{ $tableCell }}">{{ $employee->address->id }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->address->address }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->address->city }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->address->province }}</td>
+                                                <td class="{{ $tableCell }}">
+                                                    {{ $employee->address->state ?? $employee->address->postal_code }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->address->country }}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 @else
@@ -270,7 +233,8 @@
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-contacts"></i>
                             </div>
                             <div class="p-8 hidden overflow-x-auto" id="content-contacts">
-                                @if($employee->contacts->count() >= 0)
+                                {{-- កែពី $employee->contacts->count() → ប្រើ contact (hasOne) --}}
+                                @if($employee->contact)
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="{{ $tableHead }}">
                                             <tr>
@@ -282,15 +246,13 @@
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->contacts as $c)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $c->id}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $c->phone_number}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $c->home_phone }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $c->office_phone}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $c->email }}</td>
-                                                </tr>
-                                            @endforeach
+                                            <tr>
+                                                <td class="{{ $tableCell }}">{{ $employee->contact->id }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->contact->phone_number }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->contact->home_phone }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->contact->office_phone }}</td>
+                                                <td class="{{ $tableCell }}">{{ $employee->contact->email }}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 @else
@@ -298,7 +260,6 @@
                                 @endif
                             </div>
                         </div>
-
                         <!-- 5. Emergency Contacts -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
@@ -369,11 +330,15 @@
                                                     <td class="{{ $tableCell }}">{{ $m->dob }}</td>
                                                     <td class="{{ $tableCell }}">{{ $m->gender }}</td>
                                                     <td class="{{ $tableCell }}">{{ $m->nationality }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->tax_filling }}</td>
+                                                    <td class="{{ $tableCell }}">{{ $m->tax_filing }}</td>
                                                     <td class="{{ $tableCell }}">{{ $m->phone_number }}</td>
                                                     <td class="{{ $tableCell }}">{{ $m->remark }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->attachment }}</td>
-
+                                                    <td class="{{ $tableCell }}">
+                                                        <a href="{{ asset('storage/' . $m->attachment) }}" target="_blank"
+                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                            <i class="fas fa-download mr-2"></i> Download
+                                                        </a>
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -446,7 +411,6 @@
                                                 <th class="px-6 py-3">Start Date</th>
                                                 <th class="px-6 py-3">End Date</th>
                                                 <th class="px-6 py-3">Remark</th>
-                                                <th class="px-6 py-3">Start Date</th>
                                                 <th class="px-6 py-3">Attachment</th>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
@@ -458,7 +422,12 @@
                                                     <td class="{{ $tableCell }}">{{ $train->start_date ?? '-'}}</td>
                                                     <td class="{{ $tableCell }}">{{ $train->end_date ?? '-'}}</td>
                                                     <td class="{{ $tableCell }}">{{ $train->remark ?? '-'}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $train->attachment ?? '-'}}</td>
+                                                     <td class="{{ $tableCell }}">
+                                                        <a href="{{ asset('storage/' . $train->attachment) }}" target="_blank"
+                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                            <i class="fas fa-download mr-2"></i> Download
+                                                        </a>
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -504,7 +473,7 @@
                                                     <td class="{{ $tableCell }}">{{ $job->supervisor_name ?? '-' }}</td>
                                                     <td class="{{ $tableCell }}">{{ $job->remark ?? '-' }}</td>
                                                     <td class="{{ $tableCell }}">{{ $job->rate ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->resean_for_leaving ?? '-' }}</td>
+                                                    <td class="{{ $tableCell }}">{{ $job->reason_for_leaving ?? '-' }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -532,6 +501,7 @@
                                                 <th class="px-6 py-3">Title</th>
                                                 <th class="px-6 py-3">Year Awarded</th>
                                                 <th class="px-6 py-3">Program Name</th>
+                                                <th class="px-6 py-3">Country</th>
                                                 <th class="px-6 py-3">Organizer Name</th>
                                                 <th class="px-6 py-3">Remark</th>
                                                 <th class="px-6 py-3">Attachment</th>
@@ -541,13 +511,18 @@
                                             @foreach($employee->achievements as $ach)
                                                 <tr>
                                                     <td class="{{ $tableCell }}">{{ $ach->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->salutation }}</td>
+                                                    <td class="{{ $tableCell }}">{{ $ach->title }}</td>
                                                     <td class="{{ $tableCell }}">{{ $ach->year_awarded }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->country }}</td>
                                                     <td class="{{ $tableCell }}">{{ $ach->program_name }}</td>
+                                                    <td class="{{ $tableCell }}">{{ $ach->country }}</td> 
                                                     <td class="{{ $tableCell }}">{{ $ach->organizer_name }}</td>
                                                     <td class="{{ $tableCell }}">{{ $ach->remark }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->attachment }}</td>
+                                                                                                        <td class="{{ $tableCell }}">
+                                                        <a href="{{ asset('storage/' . $ach->attachment) }}" target="_blank"
+                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                            <i class="fas fa-download mr-2"></i> Download
+                                                        </a>
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -574,14 +549,13 @@
                                                 <th class="px-6 py-3">No.</th>
                                                 <th class="px-6 py-3">Title</th>
                                                 <th class="px-6 py-3">File Name</th>
-                                                <th class="px-6 py-3">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
                                             @foreach($employee->attachments as $file)
                                                 <tr>
-                                                    <td class="{{ $tableCell }}">{{ $file->title }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $file->file_name }}</td>
+                                                    <td class="{{ $tableCell }}">{{ $file->id }}</td>
+                                                    <td class="{{ $tableCell }}">{{ $file->attachment_name }}</td>
                                                     <td class="{{ $tableCell }}">
                                                         <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank"
                                                             class="text-indigo-600 hover:text-indigo-800 flex items-center">

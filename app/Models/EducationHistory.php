@@ -9,15 +9,15 @@ class EducationHistory extends Model
 {
     use HasFactory;
 
-    protected $table = 'education_histories'; // optional if table name is plural
+    protected $table = 'education_histories'; 
 
     protected $fillable = [
         'employee_id',
         'degree',
-        'field_of_study',
-        'institution',
-        'start_year',
-        'end_year',
-        'grade',
+        'institute',
+        'subject',
+        'start_date',
+        'end_date',
+        'remark',
     ];
 }

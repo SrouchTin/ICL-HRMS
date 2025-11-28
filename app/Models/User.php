@@ -33,6 +33,12 @@ class User extends Authenticatable
         return $this->belongsTo(\App\Models\Branch::class);
     }
 
+    public function employee()
+{
+    return $this->hasOne(\App\Models\Employee::class, 'user_id', 'id');
+    //                          ↑ your foreign key   ↑ local key (users.id)
+}
+
     // Helper methods
     public function hasRole(string $roleName): bool
     {

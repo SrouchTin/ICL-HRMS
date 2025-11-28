@@ -31,13 +31,22 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     });
 
-    // HR Routes
-    Route::prefix('hr')->name('hr.')->middleware('role:hr')->group(function () {
-        Route::get('/dashboard', [HRController::class, 'dashboard'])->name('dashboard');
-        Route::resource('employees', HREmployeeController::class)
-            ->parameters(['employees' => 'employee'])
-            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy', 'show']);
-            });
+    Route::prefix('hr')
+        ->name('hr.')
+        ->middleware('role:hr')
+        ->group(function () {
+
+            Route::get('/dashboard', [HRController::class, 'dashboard'])->name('dashboard');
+
+            // Main clean resource routes
+            Route::resource('employees', HREmployeeController::class)
+                ->parameters(['employees' => 'employee'])
+                ->only(['index', 'create', 'store', 'show', 'edit', 'destroy']);
+
+            // Special: Allow both PUT and POST for update (fixes 99% of "update not working")
+            Route::match(['put', 'patch', 'post'], 'employees/{employee}', [HREmployeeController::class, 'update'])
+                ->name('employees.update');
+        });
 
     // Employee Routes
     Route::prefix('employee')->name('employee.')->middleware('role:employee')->group(function () {

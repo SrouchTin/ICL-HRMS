@@ -10,6 +10,7 @@ class FamilyMember extends Model
 {
     use HasFactory;
 
+    protected $table = "family_members";
     protected $fillable = [
         'employee_id',
         'name',

@@ -9,61 +9,15 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
-<div class="flex h-screen">
+<div x-data="{ sidebarOpen: false }" class="flex h-screen">
 
-    <!-- Sidebar -->
-    <div class="w-64 bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col">
-        <div class="p-6 text-center border-b border-indigo-700">
-            <h2 class="text-2xl font-bold">HR Dashboard</h2>
-            
-        </div>
-
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <a href="{{ route('hr.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white font-medium">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ route('hr.employees.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-users"></i>
-                <span>Employees</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-clock"></i>
-                <span>Attendance</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-calendar-check"></i>
-                <span>Leave Requests</span>
-                
-            </a>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-route"></i>
-                <span>Missions</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-car"></i>
-                <span>Company Vehicles</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                <i class="fas fa-money-bill-wave"></i>
-                <span>Payroll</span>
-            </a>
-        </nav>
-
-        <div class="p-4 border-t border-indigo-700">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </button>
-            </form>
-        </div>
-    </div>
-
+    {{-- Sidebar --}}
+        @include('layout.hrSidebar')
+    {{-- Sidebar --}}
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
         <!-- Top Bar -->
