@@ -28,15 +28,12 @@ class PersonalInfo extends Model
         'end_date'
     ];
 
-    // =============================
-    // Relationship
-    // =============================
 
-    /**
-     * PersonalInfo belongs to an Employee
-     */
+
     public function employee()
     {
         return $this->belongsTo(Employee::class);
     }
+    // app/Models/PersonalInfo.php
+
 }

@@ -75,502 +75,697 @@
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-personal"></i>
                             </div>
 
-                            <div class="p-8 overflow-x-auto" id="content-personal">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <!-- Table header always visible -->
-                                    <thead
-                                        class="{{ $tableHead ?? 'bg-gray-100 text-left text-xs font-medium text-gray-700 uppercase tracking-wider' }}">
-                                        <tr>
-                                            <th class="px-6 py-3">No.</th>
-                                            <th class="px-6 py-3">Employee Code</th>
-                                            <th class="px-6 py-3">Salutation</th>
-                                            <th class="px-6 py-3">Name(KH)</th>
-                                            <th class="px-6 py-3">Name(EN)</th>
-                                            <th class="px-6 py-3">Gender</th>
-                                            <th class="px-6 py-3">Date of Birth</th>
-                                            <th class="px-6 py-3">Nationality</th>
-                                            <th class="px-6 py-3">Marital Status</th>
-                                            <th class="px-6 py-3">Religion</th>
-                                            <th class="px-6 py-3">Blood Group</th>
-                                            <th class="px-6 py-3">Bank Account</th>
-                                            <th class="px-6 py-3">Join data</th>
-                                            <th class="px-6 py-3">Effective Data</th>
-                                            <th class="px-6 py-3">End Data</th>
-                                            <th class="px-6 py-3">Contract Type</th>
-                                            <th class="px-6 py-3">Employee Type</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @forelse([$employee->personalInfo] as $info)
-                                            <!-- This runs only if personalInfo exists -->
-                                            <tr>
-                                                <td class="{{ $tableCell ?? 'px-6 py-4 text-sm text-gray-900' }}">
-                                                    {{ $employee->id ?? '-' }}
-                                                </td>
-                                                <td class="{{ $tableCell ?? 'px-6 py-4 text-sm text-gray-900' }}">
-                                                    {{ $employee->employee_code ?? '-' }}
-                                                </td>
-                                                <td class="{{ $tableCell ?? 'px-6 py-4 text-sm text-gray-900' }}">
-                                                    {{ $info?->salutation ?? '-' }}
-                                                </td>
-                                                <td class="{{ $tableCell ?? 'px-6 py-4 text-sm text-gray-900' }}">
-                                                    {{ $info?->full_name_kh ?? '-' }}
-                                                </td>
-                                                <td class="{{ $tableCell }}">{{ $info?->full_name_en ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">
-                                                    {{ $info?->gender ? ucfirst($info->gender) : '-' }}
-                                                </td>
-                                                <td class="{{ $tableCell }}">{{ $info?->dob ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->nationality ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">
-                                                    {{ $info?->marital_status ? ucfirst($info->marital_status) : '-' }}
-                                                </td>
-                                                <td class="{{ $tableCell }}">{{ $info?->religion ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->blood_group ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->bank_account_number ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->joining_date ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->effective_date ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->end_date ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->contract_type ?? '-' }}</td>
-                                                <td class="{{ $tableCell }}">{{ $info?->employee_type ?? '-' }}</td>
-                                            </tr>
-                                        @empty
-                                            <!-- Shown when personalInfo is null or missing -->
-                                            <tr>
-                                                <td colspan="9" class="px-6 py-12 text-center text-gray-500 italic">
-                                                    No personal information recorded yet.
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                            <div class="p-8 hidden" id="content-personal">
+
+                                @php $info = $employee->personalInfo; @endphp
+
+                                @if($info)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                    <!-- Employee Code -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Employee Code</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $employee->employee_code ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Salutation -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Salutation</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->salutation ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Full Name KH -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Name (KH)</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->full_name_kh ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Full Name EN -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Name (EN)</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->full_name_en ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Gender -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Gender</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ ucfirst($info->gender) ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- DOB -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Date of Birth</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->dob ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Nationality -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Nationality</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->nationality ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Marital Status -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Marital Status</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ ucfirst($info->marital_status) ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Religion -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Religion</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->religion ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Blood Group -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Blood Group</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->blood_group ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Bank Account -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Bank Account</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->bank_account_number ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Joining Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Join Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->joining_date ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Effective Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Effective Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->effective_date ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- End Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">End Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->end_date ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Contract Type -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Contract Type</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->contract_type ?? '-' }}</div>
+                                    </div>
+
+                                    <!-- Employee Type -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Employee Type</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->employee_type ?? '-' }}</div>
+                                    </div>
+
+                                </div>
+                                @else
+                                    <p class="text-gray-500 italic">No personal information recorded yet.</p>
+                                @endif
+
                             </div>
                         </div>
+
                         <!-- 2. Identifications -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                onclick="toggleAcc('identifications')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-id-card mr-3 text-indigo-600"></i>IDENTIFICATIONS</h3>
-                                <i class="fas fa-chevron-down transition duration-300" id="icon-identifications"></i>
+                                onclick="toggleAcc('identification')">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-id-card mr-3 text-indigo-600"></i>IDENTIFICATIONS
+                                </h3>
+                                <i class="fas fa-chevron-down transition duration-300" id="icon-identification"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-identifications">
-                                {{-- កែពី $employee->identifications->count() → ប្រើ identification (hasOne) --}}
-                                @if($employee->identification)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Identification Type</th>
-                                                <th class="px-6 py-3">Identification Number</th>
-                                                <th class="px-6 py-3">Expiration Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            <tr>
-                                                <td class="{{ $tableCell }}">{{ $employee->identification->id }}</td>
-                                                <td class="{{ $tableCell }}">
-                                                    {{ $employee->identification->identification_type }}</td>
-                                                <td class="{{ $tableCell }}">
-                                                    {{ $employee->identification->identification_number }}</td>
-                                                <td class="{{ $tableCell }}">
-                                                    {{ $employee->identification->expiration_date }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-identification">
+
+                                @php $id = $employee->identification; @endphp
+
+                                @if($id)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                    <!-- Identification Type -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Identification Type</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ $id->identification_type ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Identification Number -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Identification Number</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ $id->identification_number ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Expiration Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Expiration Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ $id->expiration_date ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                </div>
                                 @else
-                                    <p class="text-gray-500 italic">No identification documents recorded.</p>
+                                    <p class="text-gray-500 italic">No identification information recorded yet.</p>
                                 @endif
+
                             </div>
                         </div>
+
 
                         <!-- 3. Addresses -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                onclick="toggleAcc('addresses')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-home mr-3 text-indigo-600"></i>PERMANENT ADDRESSES</h3>
-                                <i class="fas fa-chevron-down transition duration-300" id="icon-addresses"></i>
+                                onclick="toggleAcc('address')">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-home mr-3 text-indigo-600"></i>PERMANENT ADDRESSES
+                                </h3>
+                                <i class="fas fa-chevron-down transition duration-300" id="icon-address"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-addresses">
-                                {{-- កែពី $employee->addresses->count() → ប្រើ address (hasOne) --}}
-                                @if($employee->address)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Address</th>
-                                                <th class="px-6 py-3">City</th>
-                                                <th class="px-6 py-3">Province</th>
-                                                <th class="px-6 py-3">Postal Code</th>
-                                                <th class="px-6 py-3">Country</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            <tr>
-                                                <td class="{{ $tableCell }}">{{ $employee->address->id }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->address->address }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->address->city }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->address->province }}</td>
-                                                <td class="{{ $tableCell }}">
-                                                    {{ $employee->address->state ?? $employee->address->postal_code }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->address->country }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-address">
+
+                                @php $addr = $employee->address; @endphp
+
+                                @if($addr)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Address</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->address ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">City</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->city ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Province</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->province ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Postal Code</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->state ?? $addr->postal_code ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Country</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->country ?? '-' }}</div>
+                                    </div>
+
+                                </div>
                                 @else
-                                    <p class="text-gray-500 italic">No addresses recorded.</p>
+                                    <p class="text-gray-500 italic">No address information recorded yet.</p>
                                 @endif
+
                             </div>
                         </div>
 
                         <!-- 4. Contact Information -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                onclick="toggleAcc('contacts')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-phone mr-3 text-indigo-600"></i>CONTACT INFORMATION</h3>
-                                <i class="fas fa-chevron-down transition duration-300" id="icon-contacts"></i>
+                                onclick="toggleAcc('contact')">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-phone mr-3 text-indigo-600"></i>CONTACT INFORMATION
+                                </h3>
+                                <i class="fas fa-chevron-down transition duration-300" id="icon-contact"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-contacts">
-                                {{-- កែពី $employee->contacts->count() → ប្រើ contact (hasOne) --}}
-                                @if($employee->contact)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Phone Number</th>
-                                                <th class="px-6 py-3">Home Phone Number</th>
-                                                <th class="px-6 py-3">Office Phone Number</th>
-                                                <th class="px-6 py-3">Email</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            <tr>
-                                                <td class="{{ $tableCell }}">{{ $employee->contact->id }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->contact->phone_number }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->contact->home_phone }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->contact->office_phone }}</td>
-                                                <td class="{{ $tableCell }}">{{ $employee->contact->email }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-contact">
+
+                                @php $c = $employee->contact; @endphp
+
+                                @if($c)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Phone Number</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $c->phone_number ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Home Phone</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $c->home_phone ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Office Phone</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $c->office_phone ?? '-' }}</div>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Email</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $c->email ?? '-' }}</div>
+                                    </div>
+
+                                </div>
                                 @else
-                                    <p class="text-gray-500 italic">No contact numbers added.</p>
+                                    <p class="text-gray-500 italic">No contact information recorded yet.</p>
                                 @endif
+
                             </div>
                         </div>
+
                         <!-- 5. Emergency Contacts -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                onclick="toggleAcc('emergency')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-phone-alt mr-3 text-red-600"></i>EMERGENCY CONTACTS</h3>
-                                <i class="fas fa-chevron-down transition duration-300" id="icon-emergency"></i>
+                                onclick="toggleAcc('emergencyContact')">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-phone-alt mr-3 text-red-600"></i>EMERGENCY CONTACTS
+                                </h3>
+                                <i class="fas fa-chevron-down transition duration-300" id="icon-emergencyContact"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-emergency">
-                                @if($employee->emergencyContacts->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Contact Person</th>
-                                                <th class="px-6 py-3">Relationship</th>
-                                                <th class="px-6 py-3">Phone Number</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->emergencyContacts as $ec)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $ec->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ec->contact_person }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ec->relationship }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ec->phone_number }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-emergencyContact">
+
+                                @if($employee->emergencyContacts->count() > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    @foreach($employee->emergencyContacts as $ec)
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Contact Person</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ec->contact_person }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Relationship</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ec->relationship }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Phone Number</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ec->phone_number }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
                                 @else
-                                    <p class="text-gray-500 italic">No emergency contacts registered.</p>
+                                    <p class="text-gray-500 italic">No emergency contacts recorded yet.</p>
                                 @endif
+
                             </div>
                         </div>
+
 
                         <!-- 6. Family Members -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
                                 onclick="toggleAcc('family')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-users mr-3 text-indigo-600"></i>FAMILY MEMBERS</h3>
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-users mr-3 text-indigo-600"></i>FAMILY MEMBERS
+                                </h3>
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-family"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-family">
-                                @if($employee->familyMembers->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Name</th>
-                                                <th class="px-6 py-3">Relationship</th>
-                                                <th class="px-6 py-3">Date of Birth</th>
-                                                <th class="px-6 py-3">Gender</th>
-                                                <th class="px-6 py-3">Nationality</th>
-                                                <th class="px-6 py-3">Tax Filling</th>
-                                                <th class="px-6 py-3">Phone Number</th>
-                                                <th class="px-6 py-3">Remark</th>
-                                                <th class="px-6 py-3">Attachment</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->familyMembers as $m)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $m->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->name }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->relationship }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->dob }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->gender }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->nationality }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->tax_filing }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->phone_number }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $m->remark }}</td>
-                                                    <td class="{{ $tableCell }}">
-                                                        <a href="{{ asset('storage/' . $m->attachment) }}" target="_blank"
-                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
-                                                            <i class="fas fa-download mr-2"></i> Download
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-family">
+
+                                @if($employee->familyMembers->count() > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    @foreach($employee->familyMembers as $f)
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Name</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->name }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Relationship</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->relationship }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Date of Birth</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->dob }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Gender</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->gender }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Nationality</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->nationality }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Tax Filing</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->tax_filing }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Phone Number</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->phone_number }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Remark</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $f->remark }}</div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Attachment</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                                <a href="{{ asset('storage/' . $f->attachment) }}" target="_blank"
+                                                class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                    <i class="fas fa-download mr-2"></i> Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                                 @else
-                                    <p class="text-gray-500 italic">No family members added.</p>
+                                    <p class="text-gray-500 italic">No family members recorded yet.</p>
                                 @endif
+
                             </div>
                         </div>
 
+
                         <!-- 7. Education History -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                onclick="toggleAcc('education')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-graduation-cap mr-3 text-indigo-600"></i>EDUCATION HISTORY</h3>
-                                <i class="fas fa-chevron-down transition duration-300" id="icon-education"></i>
-                            </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-education">
-                                @if($employee->educationHistories->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Institutue</th>
-                                                <th class="px-6 py-3">Subject</th>
-                                                <th class="px-6 py-3">Degree</th>
-                                                <th class="px-6 py-3">Start Date</th>
-                                                <th class="px-6 py-3">End Date</th>
-                                                <th class="px-6 py-3">Remark</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->educationHistories as $edu)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $edu->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $edu->institute }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $edu->subject }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $edu->degree }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $edu->start_date}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $edu->end_date }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $edu->remark ?? '-' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                @else
-                                    <p class="text-gray-500 italic">No education history recorded.</p>
-                                @endif
-                            </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
+                            onclick="toggleAcc('education')">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-graduation-cap mr-3 text-indigo-600"></i>EDUCATION HISTORY
+                            </h3>
+                            <i class="fas fa-chevron-down transition duration-300" id="icon-education"></i>
                         </div>
+
+                        <div class="p-8 hidden" id="content-education">
+
+                            @if($employee->educationHistories->count() > 0)
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                @foreach($employee->educationHistories as $edu)
+
+                                    <!-- Institute -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Institute</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $edu->institute }}</div>
+                                    </div>
+
+                                    <!-- Subject -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Subject</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $edu->subject }}</div>
+                                    </div>
+
+                                    <!-- Degree -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Degree</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $edu->degree }}</div>
+                                    </div>
+
+                                    <!-- Start Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Start Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $edu->start_date }}</div>
+                                    </div>
+
+                                    <!-- End Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">End Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $edu->end_date }}</div>
+                                    </div>
+
+                                    <!-- Remark -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Remark</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $edu->remark ?? '-' }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @else
+                                <p class="text-gray-500 italic">No education history recorded.</p>
+                            @endif
+
+                        </div>
+                    </div>
+
 
                         <!-- 8. Training & Certifications -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
                                 onclick="toggleAcc('training')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-certificate mr-3 text-indigo-600"></i>TRAINING HISTORY INFO
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-certificate mr-3 text-indigo-600"></i>TRAINING HISTORY INFO
                                 </h3>
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-training"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-training">
-                                @if($employee->trainingHistories->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Institute</th>
-                                                <th class="px-6 py-3">Subject</th>
-                                                <th class="px-6 py-3">Start Date</th>
-                                                <th class="px-6 py-3">End Date</th>
-                                                <th class="px-6 py-3">Remark</th>
-                                                <th class="px-6 py-3">Attachment</th>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->trainingHistories as $train)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $train->id ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $train->institute ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $train->subject ?? '-'}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $train->start_date ?? '-'}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $train->end_date ?? '-'}}</td>
-                                                    <td class="{{ $tableCell }}">{{ $train->remark ?? '-'}}</td>
-                                                     <td class="{{ $tableCell }}">
-                                                        <a href="{{ asset('storage/' . $train->attachment) }}" target="_blank"
-                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
-                                                            <i class="fas fa-download mr-2"></i> Download
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-training">
+                                @if($employee->trainingHistories->count() > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    @foreach($employee->trainingHistories as $train) 
+                                        <!-- Institute -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Institute</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $train->institute ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Subject -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Subject</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $train->subject ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Start Date -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Start Date</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $train->start_date ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- End Date -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">End Date</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $train->end_date ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Remark -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Remark</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $train->remark ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Attachment -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Attachment</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                                @if($train->attachment)
+                                                    <a href="{{ asset('storage/' . $train->attachment) }}" target="_blank"
+                                                        class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                        <i class="fas fa-download mr-2"></i> Download
+                                                    </a>
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                                 @else
                                     <p class="text-gray-500 italic">No training records found.</p>
                                 @endif
                             </div>
                         </div>
 
+
                         <!-- 9. EMPLOYMENT HISTORY INFO -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
                                 onclick="toggleAcc('employment')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-briefcase mr-3 text-indigo-600"></i>EMPLOYMENT HISTORY INFO</h3>
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-briefcase mr-3 text-indigo-600"></i>EMPLOYMENT HISTORY INFO
+                                </h3>
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-employment"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-employment">
-                                @if($employee->employmentHistories->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Company Name</th>
-                                                <th class="px-6 py-3">Start Date</th>
-                                                <th class="px-6 py-3">End Date</th>
-                                                <th class="px-6 py-3">Designation</th>
-                                                <th class="px-6 py-3">Supervisor Name</th>
-                                                <th class="px-6 py-3">Remark</th>
-                                                <th class="px-6 py-3">Rate</th>
-                                                <th class="px-6 py-3">Reason for leaving</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->employmentHistories as $job)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $job->id ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->company_name ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->start_date ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->end_date ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->designation ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->supervisor_name ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->remark ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->rate ?? '-' }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $job->reason_for_leaving ?? '-' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-employment">
+                                @if($employee->employmentHistories->count() > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    @foreach($employee->employmentHistories as $job)
+
+                                        <!-- Company Name -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Company Name</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->company_name ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Start Date -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Start Date</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->start_date ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- End Date -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">End Date</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->end_date ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Designation -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Designation</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->designation ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Supervisor Name -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Supervisor Name</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->supervisor_name ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Remark -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Remark</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->remark ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Rate -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Rate</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->rate ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Reason for Leaving -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Reason for Leaving</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $job->reason_for_leaving ?? '-' }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
                                 @else
                                     <p class="text-gray-500 italic">No previous employment recorded.</p>
                                 @endif
                             </div>
                         </div>
 
+
                         <!-- 10. Achievements & Awards -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
                                 onclick="toggleAcc('achievements')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-trophy mr-3 text-indigo-600"></i>ACHIEVEMENTS </h3>
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-trophy mr-3 text-indigo-600"></i>ACHIEVEMENTS
+                                </h3>
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-achievements"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-achievements">
-                                @if($employee->achievements->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Title</th>
-                                                <th class="px-6 py-3">Year Awarded</th>
-                                                <th class="px-6 py-3">Program Name</th>
-                                                <th class="px-6 py-3">Country</th>
-                                                <th class="px-6 py-3">Organizer Name</th>
-                                                <th class="px-6 py-3">Remark</th>
-                                                <th class="px-6 py-3">Attachment</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->achievements as $ach)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $ach->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->title }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->year_awarded }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->program_name }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->country }}</td> 
-                                                    <td class="{{ $tableCell }}">{{ $ach->organizer_name }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $ach->remark }}</td>
-                                                                                                        <td class="{{ $tableCell }}">
-                                                        <a href="{{ asset('storage/' . $ach->attachment) }}" target="_blank"
-                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
-                                                            <i class="fas fa-download mr-2"></i> Download
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+
+                            <div class="p-8 hidden" id="content-achievements">
+                                @if($employee->achievements->count() > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    @foreach($employee->achievements as $ach)
+
+                                        <!-- Title -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Title</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ach->title ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Year Awarded -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Year Awarded</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ach->year_awarded ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Program Name -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Program Name</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ach->program_name ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Country -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Country</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ach->country ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Organizer Name -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Organizer Name</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ach->organizer_name ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Remark -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Remark</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $ach->remark ?? '-' }}</div>
+                                        </div>
+
+                                        <!-- Attachment -->
+                                        <div>
+                                            <label class="text-gray-600 text-sm font-semibold">Attachment</label>
+                                            <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                                @if($ach->attachment)
+                                                    <a href="{{ asset('storage/' . $ach->attachment) }}" target="_blank"
+                                                    class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                    <i class="fas fa-download mr-2"></i> Download
+                                                    </a>
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                                 @else
                                     <p class="text-gray-500 italic">No achievements recorded yet.</p>
                                 @endif
                             </div>
                         </div>
 
+
                         <!-- 11. Documents & Attachments -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
                                 onclick="toggleAcc('attachments')">
-                                <h3 class="text-lg font-semibold text-gray-800"><i
-                                        class="fas fa-paperclip mr-3 text-indigo-600"></i>ATTACHMENTS</h3>
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-paperclip mr-3 text-indigo-600"></i>ATTACHMENTS
+                                </h3>
                                 <i class="fas fa-chevron-down transition duration-300" id="icon-attachments"></i>
                             </div>
-                            <div class="p-8 hidden overflow-x-auto" id="content-attachments">
-                                @if($employee->attachments->count() >= 0)
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="{{ $tableHead }}">
-                                            <tr>
-                                                <th class="px-6 py-3">No.</th>
-                                                <th class="px-6 py-3">Title</th>
-                                                <th class="px-6 py-3">File Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($employee->attachments as $file)
-                                                <tr>
-                                                    <td class="{{ $tableCell }}">{{ $file->id }}</td>
-                                                    <td class="{{ $tableCell }}">{{ $file->attachment_name }}</td>
-                                                    <td class="{{ $tableCell }}">
+
+                            <div class="p-8 hidden" id="content-attachments">
+                                @if($employee->attachments->count() > 0)
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        @foreach($employee->attachments as $file)
+
+                                            <!-- Attachment Name -->
+                                            <div>
+                                                <label class="text-gray-600 text-sm font-semibold">Attachment Name</label>
+                                                <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                                    {{ $file->attachment_name ?? '-' }}
+                                                </div>
+                                            </div>
+
+                                            <!-- File / Download -->
+                                            <div>
+                                                <label class="text-gray-600 text-sm font-semibold">File</label>
+                                                <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                                    @if(!empty($file->file_path))
                                                         <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank"
-                                                            class="text-indigo-600 hover:text-indigo-800 flex items-center">
-                                                            <i class="fas fa-download mr-2"></i> Download
+                                                        class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                        <i class="fas fa-download mr-2"></i> Download
                                                         </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                        @endforeach
+                                    </div>
                                 @else
                                     <p class="text-gray-500 italic">No documents uploaded.</p>
                                 @endif
                             </div>
                         </div>
+
+
                     </div>
                 </div>
             </main>

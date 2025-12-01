@@ -536,6 +536,7 @@ class HREmployeeController extends Controller
             } else {
                 $employee->identification()?->delete();
             }
+ 
 
             // Sync all dynamic sections
             $this->syncEmergencyContacts($request, $employee);

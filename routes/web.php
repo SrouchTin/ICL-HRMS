@@ -6,18 +6,20 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Employee\EmployeeController;
 use App\Http\Controllers\HR\HRController;
 use App\Http\Controllers\HR\HREmployeeController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Auth;
 
-// Root route — ដោះស្រាយទាំង guest និង authenticated នៅទីនេះតែមួយកន្លែង
-// Root route — ដោះស្រាយទាំងអស់នៅទីនេះ
+// Root route
 Route::get('/', function () {
     return Auth::check()
         ? redirect()->route(
-            optional(Auth::user()->role)->name === 'admin' ? 'admin.dashboard' : (optional(Auth::user()->role)->name === 'hr' ? 'hr.dashboard' : 'employee.dashboard')
+            optional(Auth::user()->role)->name === 'admin' ? 'admin.dashboard' : 
+            (optional(Auth::user()->role)->name === 'hr' ? 'hr.dashboard' : 'employee.dashboard')
         )
         : redirect()->route('login');
 });
 
+// Authentication
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -26,11 +28,19 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Admin Routes
+    // ==================== ADMIN ROUTES ====================
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+        // THIS LINE WAS BROKEN — NOW FIXED!
+        Route::resource('users', UserController::class)
+             ->parameters(['users' => 'user']); // THIS FIXES edit/update/destroy
+
+        // Admin can view employees (read-only)
+        Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     });
 
+    // ==================== HR ROUTES ====================
     Route::prefix('hr')
         ->name('hr.')
         ->middleware('role:hr')
@@ -38,18 +48,21 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/dashboard', [HRController::class, 'dashboard'])->name('dashboard');
 
-            // Main clean resource routes
             Route::resource('employees', HREmployeeController::class)
                 ->parameters(['employees' => 'employee'])
                 ->only(['index', 'create', 'store', 'show', 'edit', 'destroy']);
 
-            // Special: Allow both PUT and POST for update (fixes 99% of "update not working")
+            // Extra safety for update
             Route::match(['put', 'patch', 'post'], 'employees/{employee}', [HREmployeeController::class, 'update'])
                 ->name('employees.update');
         });
 
-    // Employee Routes
-    Route::prefix('employee')->name('employee.')->middleware('role:employee')->group(function () {
-        Route::get('/dashboard', [EmployeeController::class, 'dashboard'])->name('dashboard');
-    });
+    // ==================== EMPLOYEE ROUTES ====================
+    Route::prefix('employee')
+        ->name('employee.')
+        ->middleware(['auth', 'role:employee'])
+        ->group(function () {
+            Route::get('/dashboard', [EmployeeController::class, 'dashboard'])->name('dashboard');
+            Route::get('/profile', [EmployeeController::class, 'myProfile'])->name('profile');
+        });
 });

@@ -12,7 +12,12 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role_id', 'branch_id', 'status'
+        'name',
+        'email',
+        'password',
+        'role_id',
+        'branch_id',
+        'status'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -34,10 +39,10 @@ class User extends Authenticatable
     }
 
     public function employee()
-{
-    return $this->hasOne(\App\Models\Employee::class, 'user_id', 'id');
-    //                          ↑ your foreign key   ↑ local key (users.id)
-}
+    {
+        return $this->hasOne(\App\Models\Employee::class, 'user_id', 'id');
+        //                          ↑ your foreign key   ↑ local key (users.id)
+    }
 
     // Helper methods
     public function hasRole(string $roleName): bool
@@ -45,13 +50,24 @@ class User extends Authenticatable
         return $this->role?->name === $roleName;
     }
 
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
-    }
+// App/Models/User.php
+        public function isActive(): bool
+        {
+            // If no employee record → assume inactive (or adjust logic as needed)
+            return optional($this->employee)->status === 'active';
+        }
 
     // Optional: បន្ថែម method សម្រាប់ប្រើងាយៗ
-    public function isAdmin(): bool    { return $this->hasRole('admin'); }
-    public function isHR(): bool       { return $this->hasRole('hr'); }
-    public function isEmployee(): bool { return $this->hasRole('employee'); }
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+    public function isHR(): bool
+    {
+        return $this->hasRole('hr');
+    }
+    public function isEmployee(): bool
+    {
+        return $this->hasRole('employee');
+    }
 }

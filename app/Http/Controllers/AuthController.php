@@ -23,10 +23,10 @@ class AuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        $remember = $request->filled('remember');
+        $credentials = $request->only('email', 'password');
+        $remember    = $request->filled('remember');
 
-        // Step 1: Try login first
-        if (!Auth::attempt($request->only('email', 'password'), $remember)) {
+        if (! Auth::attempt($credentials, $remember)) {
             throw ValidationException::withMessages([
                 'email' => 'អ៊ីមែល ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវ។',
             ]);
@@ -34,15 +34,30 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Step 2: NOW check employee status
-        if ($user->employee && $user->employee->status !== 'active') {
-            Auth::logout(); // Kick them out immediately
+        // ONLY block if:
+        // 1. User account is not active, OR
+        // 2. User has employee record AND it's not active
+        if (
+            $user->status !== 'active' ||
+            ($user->employee && $user->employee->status !== 'active')
+        ) {
+            Auth::logout();
+
+            $reasons = [];
+            if ($user->status !== 'active') {
+                $reasons[] = "គណនី: " . ucfirst($user->status);
+            }
+            if ($user->employee && $user->employee->status !== 'active') {
+                $reasons[] = "បុគ្គលិក: " . ucfirst($user->employee->status);
+            }
+
             throw ValidationException::withMessages([
-                'email' => 'គណនីនេះមិនអនុញ្ញាតឱ្យចូលប្រើប្រព័ន្ធ។ ស្ថានភាពបុគ្គលិក: ' . ucfirst($user->employee->status),
+                'email' => 'គណនីមិនអនុញ្ញាតឱ្យចូលប្រើ។ ' . implode(' | ', $reasons),
             ]);
         }
 
         $request->session()->regenerate();
+
         return $this->redirectBasedOnRole();
     }
 
