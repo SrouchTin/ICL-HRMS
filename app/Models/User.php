@@ -6,18 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
+// app/Models/User.php
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $table = "users";
+    protected $primaryKey = 'id';
     protected $fillable = [
-        'name',
-        'email',
+        'username',
+        'employee_id',
         'password',
         'role_id',
         'branch_id',
-        'status'
+        'status',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -27,10 +31,22 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Relationship
+
+    // Relationships
+public function personalInfo()
+{
+    return $this->hasOneThrough(
+        PersonalInfo::class,
+        Employee::class,
+        'id',
+        'employee_id',
+        'employee_id',
+        'id'
+    );
+}
     public function role(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Role::class);
+        return $this->belongsTo(\App\Models\Role::class,'role_id');
     }
 
     public function branch(): BelongsTo
@@ -38,26 +54,23 @@ class User extends Authenticatable
         return $this->belongsTo(\App\Models\Branch::class);
     }
 
-    public function employee()
-    {
-        return $this->hasOne(\App\Models\Employee::class, 'user_id', 'id');
-        //                          ↑ your foreign key   ↑ local key (users.id)
-    }
+    // app/Models/User.php
+public function employee()
+{
+    return $this->belongsTo(Employee::class, 'employee_id', 'id');
+}
 
     // Helper methods
     public function hasRole(string $roleName): bool
     {
-        return $this->role?->name === $roleName;
+        return strtolower($this->role?->name ?? '') === strtolower($roleName);
     }
 
-// App/Models/User.php
-        public function isActive(): bool
-        {
-            // If no employee record → assume inactive (or adjust logic as needed)
-            return optional($this->employee)->status === 'active';
-        }
+    public function isActive(): bool
+    {
+        return optional($this->employee)->status === 'active';
+    }
 
-    // Optional: បន្ថែម method សម្រាប់ប្រើងាយៗ
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');

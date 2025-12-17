@@ -10,6 +10,7 @@ class Address extends Model
 {
     use HasFactory;
 
+    protected $table = 'addresses';
     protected $fillable = [
         'employee_id',
         'address',

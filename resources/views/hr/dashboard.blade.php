@@ -25,7 +25,7 @@
             <div class="flex items-center justify-between px-8 py-4">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-800">
-                        Welcome back, <span class="text-indigo-600">{{ $user->name }}</span>
+                        Welcome back, <span class="text-indigo-600">{{ auth()->user()->username }}</span>
                     </h1>
                     <p class="text-gray-600 text-sm">
                         Branch: <strong>{{ $branch->branch_name ?? 'Not assigned' }}</strong>
@@ -131,7 +131,7 @@
                     <i class="fas fa-plus-circle text-3xl mb-3"></i>
                     <p class="font-medium">New Leave Request</p>
                 </a>
-                <a href="#" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+                <a href="{{ route('hr.employees.create') }}" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
                     <i class="fas fa-user-plus text-3xl mb-3"></i>
                     <p class="font-medium">Add Employee</p>
                 </a>

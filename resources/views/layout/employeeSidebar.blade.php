@@ -25,16 +25,21 @@
             <span>Dashboard</span>
         </a>
 
+        <a href="{{ route('employee.profile') }}"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base {{ request()->routeIs('employee.profile') ? 'bg-indigo-700 font-medium shadow' : '' }}">
+            <i class="fas fa-user-circle w-5"></i>
+            <span>My Profile</span>
+        </a>
+
         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base">
             <i class="fas fa-clock w-5"></i>
             <span>Attendance</span>
         </a>
 
-        <a href="#"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base relative">
+        <a href="{{ route('employee.leaves.index') }}"
+            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base {{ request()->routeIs('employee.leaves.*') ? 'bg-indigo-700 font-medium shadow' : '' }}">
             <i class="fas fa-calendar-times w-5"></i>
             <span>Leave Requests</span>
-
         </a>
 
         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base">
@@ -45,12 +50,6 @@
         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base">
             <i class="fas fa-file-invoice-dollar w-5"></i>
             <span>Payslips</span>
-        </a>
-
-        <a href="{{ route('employee.profile') }}"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base {{ request()->routeIs('employee.profile') ? 'bg-indigo-700 font-medium shadow' : '' }}">
-            <i class="fas fa-user-circle w-5"></i>
-            <span>My Profile</span>
         </a>
     </nav>
 

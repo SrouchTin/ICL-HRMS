@@ -37,25 +37,51 @@
                 <div class="max-w-7xl mx-auto space-y-6">
 
                     <!-- Profile Header -->
-                    <div
-                        class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 flex flex-col md:flex-row items-center gap-8">
-                        <img src="{{ $employee->image ? asset('storage/' . $employee->image) : asset('images/default-avatar.png') }}"
-                            alt="Profile"
-                            class="w-40 h-40 rounded-full object-cover border-6 border-indigo-100 shadow-lg">
-                        <div class="text-center md:text-left">
-                            <h2 class="text-4xl font-extrabold text-gray-900">{{ $employee->user->name }}</h2>
-                            <p class="text-2xl text-indigo-600 font-medium mt-1">
-                                {{ $employee->position?->position_name ?? 'No Position Assigned' }}
-                            </p>
-                            <div class="flex flex-wrap gap-6 mt-4 text-gray-600">
-                                <span><i
-                                        class="fas fa-building mr-2"></i>{{ $employee->branch?->branch_name ?? '-' }}</span>
-                                <span><i class="fas fa-envelope mr-2"></i>{{ $employee->user->email }}</span>
-                                <span><i
-                                        class="fas fa-id-badge mr-2"></i>#{{ str_pad($employee->id, 6, '0', STR_PAD_LEFT) }}</span>
-                            </div>
-                        </div>
-                    </div>
+<!-- PERFECT PROFILE HEADER FOR HR - NO CUT HEAD, ALWAYS BEAUTIFUL -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 md:p-10">
+    <div class="flex flex-col md:flex-row items-center gap-10">
+
+        <!-- BIG & SMART AVATAR - NEVER CUTS HEAD -->
+        <div class="shrink-0">
+            <div class="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden border-8 border-white shadow-2xl bg-gray-200 ring-4 ring-indigo-100">
+                <img src="{{ $employee->image 
+                    ? asset('storage/' . $employee->image) 
+                    : asset('images/default-avatar.png') }}"
+                    alt="Profile Photo"
+                    class="w-full h-full object-cover object-top"> <!-- KEY: object-top = head never cut -->
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="text-center md:text-left flex-1">
+            <h2 class="text-4xl font-extrabold text-gray-900">
+                {{ $employee->user->name 
+                    ?? $employee->personalInfo?->full_name_en 
+                    ?? $employee->personalInfo?->full_name_kh 
+                    ?? 'Employee Name Not Set' }}
+            </h2>
+
+            <p class="text-2xl text-indigo-600 font-medium mt-2">
+                {{ $employee->position?->position_name ?? 'No Position Assigned' }}
+            </p>
+
+            <div class="flex flex-wrap gap-8 mt-6 text-gray-600 text-lg">
+                <span class="flex items-center gap-2">
+                    <i class="fas fa-building text-indigo-600"></i>
+                    {{ $employee->branch?->branch_name ?? '—' }}
+                </span>
+                <span class="flex items-center gap-2">
+                    <i class="fas fa-envelope text-indigo-600"></i>
+                    {{ $employee->contact?->email ?? 'No Email' }}
+                </span>
+                <span class="flex items-center gap-2">
+                    <i class="fas fa-id-badge text-indigo-600"></i>
+                    #{{ str_pad($employee->id, 6, '0', STR_PAD_LEFT) }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
 
                     <!-- ALL 11 ACCORDIONS - NOW ALL IN CLEAN TABLES -->
                     <div class="space-y-5">
@@ -143,10 +169,14 @@
                                         <label class="text-gray-600 text-sm font-semibold">Blood Group</label>
                                         <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->blood_group ?? '-' }}</div>
                                     </div>
-
                                     <!-- Bank Account -->
                                     <div>
-                                        <label class="text-gray-600 text-sm font-semibold">Bank Account</label>
+                                        <label class="text-gray-600 text-sm font-semibold">Bank Account Name</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->bank_account_name ?? '-' }}</div>
+                                    </div>
+                                    <!-- Bank Account -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Bank Account Number</label>
                                         <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $info->bank_account_number ?? '-' }}</div>
                                     </div>
 
@@ -188,56 +218,6 @@
                             </div>
                         </div>
 
-                        <!-- 2. Identifications -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                onclick="toggleAcc('identification')">
-                                <h3 class="text-lg font-semibold text-gray-800">
-                                    <i class="fas fa-id-card mr-3 text-indigo-600"></i>IDENTIFICATIONS
-                                </h3>
-                                <i class="fas fa-chevron-down transition duration-300" id="icon-identification"></i>
-                            </div>
-
-                            <div class="p-8 hidden" id="content-identification">
-
-                                @php $id = $employee->identification; @endphp
-
-                                @if($id)
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                                    <!-- Identification Type -->
-                                    <div>
-                                        <label class="text-gray-600 text-sm font-semibold">Identification Type</label>
-                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
-                                            {{ $id->identification_type ?? '-' }}
-                                        </div>
-                                    </div>
-
-                                    <!-- Identification Number -->
-                                    <div>
-                                        <label class="text-gray-600 text-sm font-semibold">Identification Number</label>
-                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
-                                            {{ $id->identification_number ?? '-' }}
-                                        </div>
-                                    </div>
-
-                                    <!-- Expiration Date -->
-                                    <div>
-                                        <label class="text-gray-600 text-sm font-semibold">Expiration Date</label>
-                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
-                                            {{ $id->expiration_date ?? '-' }}
-                                        </div>
-                                    </div>
-
-                                </div>
-                                @else
-                                    <p class="text-gray-500 italic">No identification information recorded yet.</p>
-                                @endif
-
-                            </div>
-                        </div>
-
-
                         <!-- 3. Addresses -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
@@ -254,11 +234,6 @@
 
                                 @if($addr)
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                                    <div>
-                                        <label class="text-gray-600 text-sm font-semibold">Address</label>
-                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->address ?? '-' }}</div>
-                                    </div>
 
                                     <div>
                                         <label class="text-gray-600 text-sm font-semibold">City</label>
@@ -280,6 +255,10 @@
                                         <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->country ?? '-' }}</div>
                                     </div>
 
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Full Address</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">{{ $addr->address ?? '-' }}</div>
+                                    </div>
                                 </div>
                                 @else
                                     <p class="text-gray-500 italic">No address information recorded yet.</p>
@@ -333,6 +312,55 @@
                             </div>
                         </div>
 
+                        <!-- 2. Identifications -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"
+                                onclick="toggleAcc('identification')">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-id-card mr-3 text-indigo-600"></i>IDENTIFICATIONS
+                                </h3>
+                                <i class="fas fa-chevron-down transition duration-300" id="icon-identification"></i>
+                            </div>
+
+                            <div class="p-8 hidden" id="content-identification">
+
+                                @php $id = $employee->identification; @endphp
+
+                                @if($id)
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                    <!-- Identification Type -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Identification Type</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ $id->identification_type ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Identification Number -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Identification Number</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ $id->identification_number ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Expiration Date -->
+                                    <div>
+                                        <label class="text-gray-600 text-sm font-semibold">Expiration Date</label>
+                                        <div class="mt-1 p-3 bg-gray-50 rounded-lg border">
+                                            {{ $id->expiration_date ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                </div>
+                                @else
+                                    <p class="text-gray-500 italic">No identification information recorded yet.</p>
+                                @endif
+
+                            </div>
+                        </div>
+                        
                         <!-- 5. Emergency Contacts -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-6 py-5 flex justify-between items-center cursor-pointer hover:bg-gray-100"

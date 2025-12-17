@@ -34,15 +34,12 @@ class Employee extends Model
         'employment_type',
         'status',
     ];
+    
 
-    // =============================
-    // RELATIONSHIPS – ត្រឹមត្រូវ 100%
-    // =============================
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+public function user()
+{
+    return $this->hasOne(User::class, 'employee_id', 'id');
+}
 
     public function department()
     {
@@ -59,18 +56,17 @@ class Employee extends Model
         return $this->belongsTo(Position::class);
     }
 
-    // 1:1 Relationships (មនុស្សម្នាក់ → មានតែមួយ)
     public function personalInfo()
     {
-        return $this->hasOne(PersonalInfo::class);
+        return $this->hasOne(PersonalInfo::class, 'employee_id', 'id');
     }
 
-    public function contact()           // ប្តូរពី contacts() → contact()
+    public function contact()           
     {
         return $this->hasOne(Contact::class);
     }
 
-    public function address()           // ប្តូរពី addresses() → address()
+    public function address()           
     {
         return $this->hasOne(Address::class);
     }
@@ -115,5 +111,10 @@ class Employee extends Model
     public function achievements()
     {
         return $this->hasMany(Achievement::class);
+    }
+
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class);
     }
 }

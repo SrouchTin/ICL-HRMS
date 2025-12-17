@@ -130,7 +130,7 @@
                     <i class="fas fa-clock text-3xl mb-3"></i>
                     <p class="font-medium">Check In / Out</p>
                 </a>
-                <a href="#" class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+                <a href="{{ route('employee.leaves.index') }}" class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
                     <i class="fas fa-plus-circle text-3xl mb-3"></i>
                     <p class="font-medium">Request Leave</p>
                 </a>

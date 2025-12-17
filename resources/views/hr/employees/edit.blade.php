@@ -93,7 +93,7 @@
                     </h1>
                     <a href="{{ route('hr.employees.index') }}"
                         class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center">
-                        <i class="fas fa-arrow-left mr-2"></i> Back 
+                        <i class="fas fa-arrow-left mr-2"></i> Back
                     </a>
                 </div>
             </header>
@@ -105,7 +105,7 @@
                         @csrf
                         @method('PUT')
 
-                        
+
                         <!-- 1. Employee Information -->
                         <div class="form-section bg-white rounded-xl shadow-sm p-6 expanded mb-6">
                             <div class="section-header flex items-center justify-between mb-6">
@@ -124,12 +124,6 @@
                                     <label class="block mb-2 font-medium text-gray-700 required">Employee Code</label>
                                     <input type="text" name="employee_code"
                                         value="{{ old('employee_code', $employee->employee_code) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
-                                </div>
-
-                                <div>
-                                    <label class="block mb-2 font-medium text-gray-700 required">User ID</label>
-                                    <input type="number" name="user_id" value="{{ old('user_id', $employee->user_id) }}"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
                                 </div>
 
@@ -231,14 +225,14 @@
                                         <option value="contract" {{ old('employee_type', $pi?->employee_type) == 'contract' ? 'selected' : '' }}>Contract</option>
                                     </select>
                                 </div>
-                                <div><label class="block mb-2 font-medium text-gray-700">Effective Date</label><input
-                                        type="date" name="effective_date"
+                                <div><label class="block mb-2 font-medium text-gray-700 required">Effective
+                                        Date</label><input type="date" name="effective_date"
                                         value="{{ old('effective_date', $pi?->effective_date) }}"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
-                                <div><label class="block mb-2 font-medium text-gray-700">End Date (FDC)</label><input
+                                <div><label class="block mb-2 font-medium text-gray-700">End Date</label><input
                                         type="date" name="end_date" value="{{ old('end_date', $pi?->end_date) }}"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
-                                <div><label class="block mb-2 font-medium text-gray-700">Salutation</label>
+                                <div><label class="block mb-2 font-medium text-gray-700 required">Salutation</label>
                                     <select name="salutation"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-3">
                                         <option value="Mr" {{ old('salutation', $pi?->salutation) == 'Mr' ? 'selected' : '' }}>Mr.</option>
@@ -262,9 +256,9 @@
                                         <option value="female" {{ old('gender', $pi?->gender) == 'female' ? 'selected' : '' }}>Female</option>
                                     </select>
                                 </div>
-                                <div><label class="block mb-2 font-medium text-gray-700">Date of Birth</label><input
-                                        type="date" name="dob" value="{{ old('dob', $pi?->dob) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
+                                <div><label class="block mb-2 font-medium text-gray-700 required">Date of
+                                        Birth</label><input type="date" name="dob" value="{{ old('dob', $pi?->dob) }}"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
                                 <div><label class="block mb-2 font-medium text-gray-700">Nationality</label><input
                                         type="text" name="nationality"
                                         value="{{ old('nationality', $pi?->nationality ?? 'Cambodian') }}"
@@ -281,7 +275,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div><label class="block mb-2 font-medium text-gray-700">Marital Status</label>
+                                <div><label class="block mb-2 font-medium text-gray-700 required">Marital Status</label>
                                     <select name="marital_status"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-3">
                                         <option value="single" {{ old('marital_status', $pi?->marital_status) == 'single' ? 'selected' : '' }}>Single</option>
@@ -290,20 +284,60 @@
                                         <option value="widowed" {{ old('marital_status', $pi?->marital_status) == 'widowed' ? 'selected' : '' }}>Widowed</option>
                                     </select>
                                 </div>
-                                <div class="lg:col-span-2"><label class="block mb-2 font-medium text-gray-700">Bank
-                                        Account Number</label><input type="text" name="bank_account_number"
+                                <div>
+                                    <label class="block mb-2 font-medium text-gray-700">Bank Account Name</label>
+                                    <input type="text" name="bank_account_name"
+                                        value="{{ old('bank_account_name', $pi?->bank_account_name) }}"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"
+                                        placeholder="Name as appears on bank account">
+                                </div>
+
+                                <div>
+                                    <label class="block mb-2 font-medium text-gray-700">Bank Account Number</label>
+                                    <input type="text" name="bank_account_number"
                                         value="{{ old('bank_account_number', $pi?->bank_account_number) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"
+                                        placeholder="e.g. 000123456789">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 3. Contact Information -->
+                        <!-- 3. Permanent Address -->
                         <div class="form-section bg-white rounded-xl shadow-sm p-6 collapsed mb-6">
                             <div class="section-header flex items-center justify-between mb-6">
                                 <div class="flex items-center">
                                     <div
                                         class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center mr-3">
                                         3</div>
+                                    <h2 class="text-xl font-semibold text-gray-800">Permanent Address</h2>
+                                </div>
+                                <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
+                            </div>
+                            @php $a = $employee->address; @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label class="block mb-2 font-medium text-gray-700">City</label><input type="text"
+                                        name="city" value="{{ old('city', $a?->city) }}"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
+                                <div><label class="block mb-2 font-medium text-gray-700">Province</label><input
+                                        type="text" name="province" value="{{ old('province', $a?->province) }}"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
+                                <div><label class="block mb-2 font-medium text-gray-700">Country</label><input
+                                        type="text" name="country"
+                                        value="{{ old('country', $a?->country ?? 'Cambodia') }}"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
+                                <div><label class="block mb-2 font-medium text-gray-700 required">Address
+                                    </label><input type="text" name="address" value="{{ old('address', $a?->address) }}"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Contact Information -->
+                        <div class="form-section bg-white rounded-xl shadow-sm p-6 collapsed mb-6">
+                            <div class="section-header flex items-center justify-between mb-6">
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center mr-3">
+                                        4</div>
                                     <h2 class="text-xl font-semibold text-gray-800">Contact Information</h2>
                                 </div>
                                 <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
@@ -321,39 +355,9 @@
                                         type="text" name="office_phone"
                                         value="{{ old('office_phone', $c?->office_phone) }}"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
-                                <div><label class="block mb-2 font-medium text-gray-700 required">Email</label><input
+                                <div><label class="block mb-2 font-medium text-gray-700 ">Email</label><input
                                         type="email" name="email" value="{{ old('email', $c?->email) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
-                            </div>
-                        </div>
-
-                        <!-- 4. Permanent Address -->
-                        <div class="form-section bg-white rounded-xl shadow-sm p-6 collapsed mb-6">
-                            <div class="section-header flex items-center justify-between mb-6">
-                                <div class="flex items-center">
-                                    <div
-                                        class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center mr-3">
-                                        4</div>
-                                    <h2 class="text-xl font-semibold text-gray-800">Permanent Address</h2>
-                                </div>
-                                <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
-                            </div>
-                            @php $a = $employee->address; @endphp
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label class="block mb-2 font-medium text-gray-700 required">Address
-                                        Line</label><input type="text" name="address"
-                                        value="{{ old('address', $a?->address) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
-                                <div><label class="block mb-2 font-medium text-gray-700 required">City</label><input
-                                        type="text" name="city" value="{{ old('city', $a?->city) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
-                                <div><label class="block mb-2 font-medium text-gray-700 required">Province</label><input
-                                        type="text" name="province" value="{{ old('province', $a?->province) }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
-                                <div><label class="block mb-2 font-medium text-gray-700 required">Country</label><input
-                                        type="text" name="country"
-                                        value="{{ old('country', $a?->country ?? 'Cambodia') }}"
-                                        class="w-full border border-gray-300 rounded-lg px-4 py-3" required></div>
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3"></div>
                             </div>
                         </div>
 
@@ -421,7 +425,7 @@
                             </div>
                             <button type="button" id="add-emergency"
                                 class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Emergency Contact</button>
+                            </button>
                         </div>
 
                         <!-- 7. Family Members -->
@@ -495,7 +499,7 @@
                             </div>
                             <button type="button" id="add-family-member"
                                 class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Family Member</button>
+                            </button>
                         </div>
 
                         <!-- 8. Education History -->
@@ -547,7 +551,7 @@
                             </div>
                             <button type="button" id="add-education"
                                 class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Education</button>
+                            </button>
                         </div>
 
                         <!-- 9. Training History -->
@@ -602,7 +606,7 @@
                             </div>
                             <button type="button" id="add-training"
                                 class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Training</button>
+                            </button>
                         </div>
 
                         <!-- 10. Previous Employment -->
@@ -612,7 +616,7 @@
                                     <div
                                         class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center mr-3">
                                         10</div>
-                                    <h2 class="text-xl font-semibold text-gray-800">Previous Employment</h2>
+                                    <h2 class="text-xl font-semibold text-gray-800">Employment History</h2>
                                 </div>
                                 <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
                             </div>
@@ -662,7 +666,7 @@
                             </div>
                             <button type="button" id="add-employment"
                                 class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Previous Job</button>
+                            </button>
                         </div>
 
                         <!-- 11. Achievements & Awards -->
@@ -672,7 +676,7 @@
                                     <div
                                         class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center mr-3">
                                         11</div>
-                                    <h2 class="text-xl font-semibold text-gray-800">Achievements & Awards</h2>
+                                    <h2 class="text-xl font-semibold text-gray-800">Achievements</h2>
                                 </div>
                                 <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
                             </div>
@@ -718,8 +722,8 @@
                                 @endforeach
                             </div>
                             <button type="button" id="add-achievement"
-                                class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Achievement</button>
+                                class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+
+                                Add</button>
                         </div>
 
                         <!-- 12. Other Documents -->
@@ -729,7 +733,7 @@
                                     <div
                                         class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center mr-3">
                                         12</div>
-                                    <h2 class="text-xl font-semibold text-gray-800">Other Documents</h2>
+                                    <h2 class="text-xl font-semibold text-gray-800">Attachments</h2>
                                 </div>
                                 <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
                             </div>
@@ -739,7 +743,7 @@
                                         <div class="remove-item">×</div>
                                         <input type="hidden" name="attachments[{{ $index }}][id]" value="{{ $att->id }}">
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div><label class="block mb-1 text-sm">Document Name</label><input type="text"
+                                            <div><label class="block mb-1 text-sm">Attachemnt Name</label><input type="text"
                                                     name="attachments[{{ $index }}][name]"
                                                     value="{{ $att->attachment_name }}"
                                                     class="w-full border rounded px-3 py-2"></div>
@@ -757,7 +761,7 @@
                             </div>
                             <button type="button" id="add-attachment"
                                 class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg">+ Add
-                                Document</button>
+                            </button>
                         </div>
 
                         <!-- Submit Buttons -->
@@ -767,7 +771,7 @@
                             <button type="submit" id="submit"
                                 class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition flex items-center">
                                 <i class="fas fa-save mr-3"></i><span x-data="{ loading: false }"
-                                    @click="loading = true" x-text="loading ? 'Saving...' : 'UPDATE EMPLOYEE'">
+                                    @click="loading = true" x-text="loading ? 'Saving...' : 'UPDATE'">
                                 </span>
                             </button>
                         </div>
@@ -777,7 +781,7 @@
         </div>
     </div>
 
-    <!-- 100% WORKING JAVASCRIPT — FIXED FOREVER -->
+    {{-- Block Code Js --}}
     <script>
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -788,7 +792,7 @@
                 section.classList.add('expanded');
             });
 
-            // 2. Collapsible sections (click header to collapse/expand)
+            // 2. Collapsible sections 
             document.querySelectorAll('.section-header').forEach(header => {
                 header.addEventListener('click', () => {
                     const section = header.closest('.form-section');
@@ -842,7 +846,7 @@
                             <input type="hidden" name="family_members[${i}][id]" value="">
                             <div><label class="block mb-1 text-sm">Name</label><input type="text" name="family_members[${i}][name]" class="w-full border rounded px-3 py-2"></div>
                             <div><label class="block mb-1 text-sm">Relationship</label><input type="text" name="family_members[${i}][relationship]" class="w-full border rounded px-3 py-2"></div>
-                            <div><label class="block mb-1 text-sm">DOB</label><input type="date" name="family_members[${i}][dob]" class="w-full border rounded px-3 py-2"></div>
+                            <div><label class="block mb-1 text-sm">DOB</label><input type="date" name="family_members[${i}][dob]"  class="w-full border rounded px-3 py-2"></div>
                             <div><label class="block mb-1 text-sm">Gender</label>
                                 <select name="family_members[${i}][gender]" class="w-full border rounded px-3 py-2">
                                     <option value="male">Male</option>
@@ -871,7 +875,7 @@
                             <div><label class="block mb-1 text-sm">Degree</label><input type="text" name="education_history[${i}][degree]" class="w-full border rounded px-3 py-2"></div>
                             <div><label class="block mb-1 text-sm">Major/Subject</label><input type="text" name="education_history[${i}][subject]" class="w-full border rounded px-3 py-2"></div>
                             <div><label class="block mb-1 text-sm">Start Date</label><input type="date" name="education_history[${i}][start_date]" class="w-full border rounded px-3 py-2"></div>
-                            <div><label class="block mb-1 text-sm">End Date</label><input type="date" name="education_history[${i}][end_date]" class="w-full border rounded px-3 py-2"></div>
+                            <div><label class="block mb-1 text-sm">End Date</label><input type="date" name="education_history[${i}][end_date]"  class="w-full border rounded px-3 py-2"></div>
                             <div class="md:col-span-2"><label class="block mb-1 text-sm">Remark</label><textarea name="education_history[${i}][remark]" rows="2" class="w-full border rounded px-3 py-2"></textarea></div>
                         </div>
                     </div>`;
@@ -920,7 +924,7 @@
                             <div><label class="block mb-1 text-sm">Program</label><input type="text" name="achievements[${i}][program_name]" class="w-full border rounded px-3 py-2"></div>
                             <div><label class="block mb-1 text-sm">Organizer</label><input type="text" name="achievements[${i}][organizer_name]" class="w-full border rounded px-3 py-2"></div>
                             <div class="md:col-span-2"><label class="block mb-1 text-sm">Remark</label><textarea name="achievements[${i}][remark]" rows="2" class="w-full border rounded px-3 py-2"></textarea></div>
-                            <div class="md:col-span-2"><label class="block mb-1 text-sm">Certificate</label><input type="file" name="achievements[${i}][attachment]" class="w-full mt-1"></div>
+                            <div class="md:col-span-2"><label class="block mb-1 text-sm">Attachment</label><input type="file" name="achievements[${i}][attachment]" class="w-full mt-1"></div>
                         </div>
                     </div>`;
                 },
@@ -930,7 +934,7 @@
                         <div class="remove-item">×</div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input type="hidden" name="attachments[${i}][id]" value="">
-                            <div><label class="block mb-1 text-sm">Document Name</label><input type="text" name="attachments[${i}][name]" placeholder="e.g. Resume, Contract" class="w-full border rounded px-3 py-2"></div>
+                            <div><label class="block mb-1 text-sm">Attachment Name</label><input type="text" name="attachments[${i}][name]" placeholder="e.g. Resume, Contract" class="w-full border rounded px-3 py-2"></div>
                             <div><label class="block mb-1 text-sm">File</label><input type="file" name="attachments[${i}][file]" class="w-full mt-1"></div>
                         </div>
                     </div>`;
@@ -959,8 +963,47 @@
             document.getElementById('add-attachment')?.addEventListener('click', () => {
                 document.getElementById('attachment-container').insertAdjacentHTML('beforeend', templates.attachment());
             });
+            // === Fix date input — ដាក់នៅក្នុង DOMContentLoaded! ===
+            function applyDateLimit() {
+                document.querySelectorAll('input[type="date"]').forEach(input => {
+                    if (input.dataset.dateLimitBound) return;
+                    input.dataset.dateLimitBound = 'true';
+
+                    input.addEventListener('input', function () {
+                        let value = this.value;
+                        if (!value) return;
+                        let parts = value.split('-');
+                        if (parts[0]?.length > 4) {
+                            parts[0] = parts[0].substring(0, 4);
+                            this.value = parts.join('-');
+                        }
+                    });
+
+                    input.addEventListener('keydown', function (e) {
+                        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+                        if (allowed.includes(e.key)) return;
+                        const newVal = this.value + e.key;
+                        if (newVal.split('-')[0]?.length > 4) e.preventDefault();
+                    });
+
+                    input.addEventListener('paste', () => {
+                        setTimeout(() => {
+                            let value = this.value;
+                            let parts = value.split('-');
+                            if (parts[0]?.length > 4) {
+                                parts[0] = parts[0].substring(0, 4);
+                                this.value = parts.join('-');
+                            }
+                        }, 0);
+                    });
+                });
+            }
+            applyDateLimit();
+            const observer = new MutationObserver(applyDateLimit);
+            observer.observe(document.body, { childList: true, subtree: true });
 
         });
+
     </script>
 </body>
 

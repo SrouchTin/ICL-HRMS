@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,195 +8,240 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <style>[x-cloak] { display: none !important; }</style>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
+
 <body class="bg-gray-50">
 
-<div x-data="{ sidebarOpen: false }" class="flex min-h-screen">
-    @include('layout.adminSidebar')
+    <div x-data="{ sidebarOpen: false }" class="flex min-h-screen">
+        @include('layout.adminSidebar')
 
-    <div class="flex-1 flex flex-col">
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-            <div class="px-6 py-5 flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Manage Users</h1>
-                    <p class="text-gray-500 mt-1">Add, edit, or manage user accounts</p>
-                </div>
-                <a href="{{ route('admin.users.create') }}"
-                   class="px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md flex items-center gap-2 transition">
-                    Add New User
-                </a>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="flex-1 p-6 lg:p-10">
-            <div class="max-w-7xl mx-auto">
-
-                <!-- Success Message -->
-                @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center gap-2">
-                        {{ session('success') }}
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+                <div class="px-6 py-5 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Manage Users</h1>
+                        <p class="text-gray-500 mt-1">View and manage all system login accounts</p>
                     </div>
-                @endif
-
-                <!-- Clickable Stats Cards -->
-                <div class="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <a href="{{ route('admin.users.index') }}"
-                       class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 p-6 flex items-center gap-5
-                              {{ !request('status') || request('status') === 'all' ? 'ring-4 ring-indigo-200' : '' }}">
-                        <div class="flex-1">
-                            <p class="text-5xl font-extrabold text-indigo-600 group-hover:text-indigo-700">{{ $totalAll }}</p>
-                            <p class="text-gray-600 font-medium mt-1">Total System Users</p>
-                        </div>
-                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center group-hover:scale-110 transition">
-                            <i class="fas fa-users text-2xl text-indigo-600"></i>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('admin.users.index', ['status' => 'active']) }}"
-                       class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 p-6 flex items-center gap-5
-                              {{ request('status') === 'active' ? 'ring-4 ring-green-200' : '' }}">
-                        <div class="flex-1">
-                            <p class="text-5xl font-extrabold text-green-600 group-hover:text-green-700">{{ $totalActive }}</p>
-                            <p class="text-gray-600 font-medium mt-1">Active Users</p>
-                        </div>
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition">
-                            <i class="fas fa-user-check text-2xl text-green-600"></i>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('admin.users.index', ['status' => 'inactive']) }}"
-                       class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 p-6 flex items-center gap-5
-                              {{ request('status') === 'inactive' ? 'ring-4 ring-red-200' : '' }}">
-                        <div class="flex-1">
-                            <p class="text-5xl font-extrabold text-red-600 group-hover:text-red-700">{{ $totalInactive }}</p>
-                            <p class="text-gray-600 font-medium mt-1">Inactive Users</p>
-                        </div>
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center group-hover:scale-110 transition">
-                            <i class="fas fa-user-slash text-2xl text-red-600"></i>
-                        </div>
+                    <a href="{{ route('admin.users.create') }}"
+                        class="px-7 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg flex items-center gap-3 transition transform hover:scale-105">
+                        <i class="fas fa-user-plus"></i> Add New User
                     </a>
                 </div>
+            </header>
 
-                <!-- Search Bar -->
-                <form method="GET" action="{{ route('admin.users.index') }}" class="mb-6">
-                    <div class="relative max-w-md">
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Search by name or email..." 
-                               class="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-800 placeholder-gray-500">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
+            <!-- Main Content -->
+            <main class="flex-1 p-6 lg:p-10">
+                <div class="max-w-7xl mx-auto">
+
+                    <!-- Success Message -->
+                    @if(session('success'))
+                        <div
+                            class="mb-6 p-5 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-3 shadow-sm">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                            <span class="font-medium">{{ session('success') }}</span>
                         </div>
-                        @if(request('search'))
-                            <a href="{{ route('admin.users.index', request()->except('search')) }}" 
-                               class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times"></i>
-                            </a>
-                        @endif
-                    </div>
-                </form>
+                    @endif
 
-                <!-- Users Table -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-100 border-b border-gray-300">
-                                <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Role</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Branch</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @forelse($users as $user)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4 text-sm text-gray-600">#{{ $user->id }}</td>
-                                        <td class="px-6 py-4 font-medium text-gray-900">{{ $user->name }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $user->email }}</td>
-                                        <td class="px-6 py-4">
-                                            @switch($user->role_id)
-                                                @case(1) <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin</span> @break
-                                                @case(2) <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">HR</span> @break
-                                                @default <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">Employee</span>
-                                            @endswitch
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $user->branch?->branch_name ?? '—' }}</td>
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="{{ $user->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-4 py-1.5 text-xs font-bold rounded-full">
-                                                {{ ucfirst($user->status) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-center">
-                                            <div class="flex items-center justify-center gap-5 text-xl">
-                                                <!-- Edit Icon -->
+                    <!-- Stats Cards -->
+                    <div class="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <a href="{{ route('admin.users.index') }}" class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 p-6 flex items-center gap-5
+                              {{ !request('status') ? 'ring-4 ring-indigo-300' : '' }}">
+                            <div class="flex-1">
+                                <p class="text-5xl font-extrabold text-indigo-600 group-hover:text-indigo-700">
+                                    {{ $totalAll }}
+                                </p>
+                                <p class="text-gray-600 font-medium mt-1">Total Users</p>
+                            </div>
+                            <div
+                                class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fas fa-users text-2xl text-indigo-600"></i>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('admin.users.index', ['status' => 'active']) }}" class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 p-6 flex items-center gap-5
+                              {{ request('status') === 'active' ? 'ring-4 ring-green-300' : '' }}">
+                            <div class="flex-1">
+                                <p class="text-5xl font-extrabold text-green-600 group-hover:text-green-700">
+                                    {{ $totalActive }}
+                                </p>
+                                <p class="text-gray-600 font-medium mt-1">Active Users</p>
+                            </div>
+                            <div
+                                class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fas fa-user-check text-2xl text-green-600"></i>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('admin.users.index', ['status' => 'inactive']) }}" class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 p-6 flex items-center gap-5
+                              {{ request('status') === 'inactive' ? 'ring-4 ring-red-300' : '' }}">
+                            <div class="flex-1">
+                                <p class="text-5xl font-extrabold text-red-600 group-hover:text-red-700">
+                                    {{ $totalInactive }}
+                                </p>
+                                <p class="text-gray-600 font-medium mt-1">Inactive Users</p>
+                            </div>
+                            <div
+                                class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                                <i class="fas fa-user-slash text-2xl text-red-600"></i>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Search + Filter -->
+                    <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                        <form method="GET" action="{{ route('admin.users.index') }}" class="flex-1">
+                            <div class="relative max-w-md">
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    placeholder="Search by name, code, or username..."
+                                    class="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition text-gray-800">
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                @if(request('search'))
+                                    <a href="{{ route('admin.users.index', request()->except('search')) }}"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[700px]">
+                                <thead class="bg-gray-800 text-white">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold uppercase">#</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold uppercase">Employee</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold uppercase">Username</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold uppercase">Role</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold uppercase">Branch</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold uppercase">Created</th>
+                                        <th class="px-6 py-3 text-center text-sm font-semibold uppercase">Status</th>
+                                        <th class="px-6 py-3 text-center text-sm font-semibold uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @forelse($users as $user)
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="px-6 py-4 text-sm text-gray-600">{{ $loop->iteration }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-900">
+                                                {{ $user->personalInfo->full_name_en ?? '—' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-900 font-mono">
+                                                {{ $user->username }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                                            @if($user->role?->name === 'super_admin') bg-red-100 text-red-800
+                                                            @elseif($user->role?->name === 'admin') bg-purple-100 text-purple-800
+                                                            @elseif($user->role?->name === 'hr') bg-blue-100 text-blue-800
+                                                            @else bg-gray-100 text-gray-800 @endif">
+                                                    {{ ucfirst(str_replace('_', ' ', $user->role?->name ?? '—')) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-700">
+                                                {{ $user->employee?->branch->branch_code ?? '—' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500">
+                                                {{ $user->created_at }}
+                                            </td>
+                                            <td class="px-6 py-4 text-center">
+                                                <span
+                                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                                            {{ $user->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ ucfirst($user->status) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-center flex justify-center gap-3">
+                                                <!-- Edit -->
                                                 <a href="{{ route('admin.users.edit', $user) }}"
-                                                   class="text-indigo-600 hover:text-indigo-800 transition"
-                                                   title="Edit User">
-                                                    <i class="fas fa-edit"></i>
+                                                    class="text-indigo-600 hover:text-indigo-800 px-3 py-1 border border-indigo-600 rounded hover:bg-indigo-50 transition-colors"
+                                                    title="Edit">
+                                                    Edit
                                                 </a>
 
-                                                <!-- Trash Icon (Deactivate/Reactivate) -->
+                                                <!-- Active/Inactive (cannot change self) -->
                                                 @if(auth()->id() !== $user->id)
-                                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
+                                                    <form action="{{ route('admin.users.toggleStatus', $user) }}" method="POST">
                                                         @csrf
-                                                        @if($user->status === 'active')
-                                                            @method('DELETE')
-                                                            <button type="submit" onclick="return confirm('Deactivate this user?')"
-                                                                    class="text-red-600 hover:text-red-800 transition" title="Deactivate">
-                                                                <i class="fas fa-trash-alt"></i>
-                                                            </button>
-                                                        @else
-                                                            @method('PATCH')
-                                                            <button type="submit" onclick="return confirm('Reactivate this user?')"
-                                                                    class="text-green-600 hover:text-green-800 transition" title="Reactivate">
-                                                                <i class="fas fa-trash-restore"></i>
-                                                            </button>
-                                                        @endif
+                                                        <button type="submit"
+                                                            onclick="return confirm('Are you sure you want to change this user status?')"
+                                                            class="{{ $user->status === 'active' ? 'text-red-600 hover:text-red-800 border border-red-600 hover:bg-red-50' : 'text-green-600 hover:text-green-800 border border-green-600 hover:bg-green-50' }} px-3 py-1 rounded transition-colors"
+                                                            title="{{ $user->status === 'active' ? 'Set Inactive' : 'Set Active' }}">
+                                                            {{ $user->status === 'active' ? 'Inactive' : 'Active' }}
+                                                        </button>
                                                     </form>
-                                                @else
-                                                    <span class="text-gray-400" title="Cannot modify yourself">
-                                                        <i class="fas fa-user-lock"></i>
-                                                    </span>
                                                 @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-24 text-center text-gray-500">
-                                            <i class="fas fa-users text-6xl mb-4 text-gray-300"></i>
-                                            <p class="text-xl font-medium">No users found</p>
-                                            <p class="mt-2">Try adjusting your search or filters.</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="px-6 py-20 text-center text-gray-400">
+                                                <i class="fas fa-users text-5xl mb-3"></i>
+                                                <p class="text-lg font-medium">No users found</p>
+                                                <a href="{{ route('admin.users.create') }}"
+                                                    class="text-indigo-600 underline mt-2 inline-block">
+                                                    Create the first user
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <!-- Pagination -->
-                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
-                            <div>
-                                Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} 
-                                of {{ $users->total() }} user{{ $users->total() !== 1 ? 's' : '' }}
-                            </div>
-                            <div>
-                                {{ $users->appends(request()->query())->links() }}
-                            </div>
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                            {{ $users->appends(request()->query())->links() }}
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
-</div>
+
+    <!-- Reset Password Modal -->
+    <div id="resetModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h3 class="text-2xl font-bold mb-4">Reset Password</h3>
+            <form action="" id="resetForm" method="POST">
+                @csrf @method('PATCH')
+                <p class="text-gray-600 mb-4">Enter new password for: <strong id="modal-username"></strong></p>
+                <input type="password" name="password" required
+                    class="w-full px-5 py-3 border border-gray-300 rounded-xl mb-4" placeholder="New password">
+                <input type="password" name="password_confirmation" required
+                    class="w-full px-5 py-3 border border-gray-300 rounded-xl" placeholder="Confirm password">
+                <div class="flex gap-3 mt-6">
+                    <button type="submit"
+                        class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Update</button>
+                    <button type="button" onclick="closeResetModal()"
+                        class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openResetModal(userId, username) {
+            document.getElementById('resetForm').action = `/admin/users/${userId}/reset-password`;
+            document.getElementById('modal-username').textContent = username;
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+        document.getElementById('resetModal').addEventListener('click', function (e) {
+            if (e.target === this) closeResetModal();
+        });
+    </script>
 
 </body>
+
 </html>

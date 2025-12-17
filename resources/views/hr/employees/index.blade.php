@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,8 +52,8 @@
 <body class="bg-gray-50 font-sans antialiased">
 
     <div x-data="{ sidebarOpen: false }" class="flex h-screen">
-       {{-- Sidebar --}}
-            @include('layout.hrSidebar')
+        {{-- Sidebar --}}
+        @include('layout.hrSidebar')
         {{-- Sidebar --}}
 
         <!-- Main Content -->
@@ -298,29 +299,35 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div class="flex space-x-2">
+                                                    <!-- View Button -->
                                                     <a href="{{ route('hr.employees.show', $employee) }}"
-                                                        class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded transition-colors"
+                                                        class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded transition-colors"
                                                         title="View Details">
-                                                        <i class="fas fa-eye"></i>
+                                                        View
                                                     </a>
+
+                                                    <!-- Edit Button -->
                                                     <a href="{{ route('hr.employees.edit', $employee) }}"
-                                                        class="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 p-2 rounded transition-colors"
+                                                        class="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-2 rounded transition-colors"
                                                         title="Edit">
-                                                        <i class="fas fa-edit"></i>
+                                                        Edit
                                                     </a>
+
+                                                    <!-- Active/Inactive Button -->
                                                     <form action="{{ route('hr.employees.destroy', $employee) }}"
                                                         method="POST" class="inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                            onclick="return confirm('Are you sure you want to delete this employee?')"
-                                                            class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded transition-colors"
-                                                            title="Delete">
-                                                            <i class="fas fa-trash"></i>
+                                                            onclick="return confirm('Are you sure you want to change this employee status?')"
+                                                            class="{{ $employee->status === 'active' ? 'text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100' : 'text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100' }} px-3 py-2 rounded transition-colors"
+                                                            title="{{ $employee->status === 'active' ? 'Set Inactive' : 'Set Active' }}">
+                                                            {{ $employee->status === 'active' ? 'Inactive' : 'Active' }}
                                                         </button>
                                                     </form>
                                                 </div>
                                             </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -328,52 +335,52 @@
                         </div>
 
                         <!-- Pagination -->
-                        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div class="text-sm text-gray-700">
-                                    Showing
-                                    <span class="font-medium">{{ $employees->firstItem() ?? 0 }}</span>
-                                    to
-                                    <span class="font-medium">{{ $employees->lastItem() ?? 0 }}</span>
-                                    of
-                                    <span class="font-medium">{{ $employees->total() }}</span>
-                                    results
+                                    Showing {{ $employees->firstItem() ?? 0 }} to {{ $employees->lastItem() ?? 0 }}
+                                    of {{ $employees->total() }} results
                                 </div>
-                                <div class="flex space-x-1">
-                                    <!-- Previous Page Link -->
-                                    @if ($employees->onFirstPage())
-                                        <span
-                                            class="px-3 py-1 rounded-lg border border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed">
-                                            <i class="fas fa-chevron-left mr-1"></i> Previous
-                                        </span>
+
+                                <div class="flex items-center space-x-2">
+                                    <!-- Previous -->
+                                    @if($employees->onFirstPage())
+                                        <span class="px-4 py-2 text-gray-400">Previous</span>
                                     @else
-                                        <a href="{{ $employees->previousPageUrl() }}"
-                                            class="px-3 py-1 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors">
-                                            <i class="fas fa-chevron-left mr-1"></i> Previous
+                                        <a href="{{ $employees->appends(request()->query())->previousPageUrl() }}"
+                                            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                                            Previous
                                         </a>
                                     @endif
 
                                     <!-- Page Numbers -->
-                                    @foreach ($employees->getUrlRange(1, $employees->lastPage()) as $page => $url)
-                                        @if ($page == $employees->currentPage())
-                                            <span class="px-3 py-1 rounded-lg bg-indigo-600 text-white">{{ $page }}</span>
-                                        @else
-                                            <a href="{{ $url }}"
-                                                class="px-3 py-1 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors">{{ $page }}</a>
+                                    @foreach($employees->appends(request()->query())->links()->elements as $element)
+                                        @if(is_string($element))
+                                            <span class="px-3 py-2 text-gray-500">{{ $element }}</span>
+                                        @endif
+                                        @if(is_array($element))
+                                            @foreach($element as $page => $url)
+                                                @if($page == $employees->currentPage())
+                                                    <span
+                                                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium">{{ $page }}</span>
+                                                @else
+                                                    <a href="{{ $url }}"
+                                                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                                                        {{ $page }}
+                                                    </a>
+                                                @endif
+                                            @endforeach
                                         @endif
                                     @endforeach
 
-                                    <!-- Next Page Link -->
-                                    @if ($employees->hasMorePages())
-                                        <a href="{{ $employees->nextPageUrl() }}"
-                                            class="px-3 py-1 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors">
-                                            Next <i class="fas fa-chevron-right ml-1"></i>
+                                    <!-- Next -->
+                                    @if($employees->hasMorePages())
+                                        <a href="{{ $employees->appends(request()->query())->nextPageUrl() }}"
+                                            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                                            Next
                                         </a>
                                     @else
-                                        <span
-                                            class="px-3 py-1 rounded-lg border border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed">
-                                            Next <i class="fas fa-chevron-right ml-1"></i>
-                                        </span>
+                                        <span class="px-4 py-2 text-gray-400">Next</span>
                                     @endif
                                 </div>
                             </div>

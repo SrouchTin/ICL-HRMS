@@ -18,9 +18,12 @@ use App\Models\FamilyMember;
 use App\Models\Identification;
 use App\Models\TrainingHistory;
 use App\Models\Achievement;
+use FFI\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class HREmployeeController extends Controller
 {
@@ -42,7 +45,7 @@ class HREmployeeController extends Controller
             $query->where('branch_id', $request->branch_id);
         }
 
-        $employees = $query->latest()->paginate(15);
+        $employees = $query->latest()->paginate(6);
         $departments = Department::where('status', 'active')->get();
         $branches = Branch::where('status', 'active')->get();
         $positions = Position::where('status', 'active')->get();
@@ -73,192 +76,279 @@ class HREmployeeController extends Controller
 
     public function store(Request $request)
     {
-        return DB::transaction(function () use ($request) {
+        try {
+            return DB::transaction(function () use ($request) {
 
-            // ==================== 1. FULL VALIDATION (ត្រឹមត្រូវ 100%) ====================
-            $request->validate([
-                // Core
-                'employee_code' => 'required|string|max:50|unique:employees,employee_code',
-                'user_id'       => 'required|integer|exists:users,id',
-                'department_id' => 'required|integer|exists:departments,id',
-                'branch_id'     => 'required|integer|exists:branches,id',
-                'position_id'   => 'required|integer|exists:positions,id',
-                'contract_type' => 'required|in:UDC,FDC',
-                'employee_type' => 'required|in:full_time,part_time,probation,internship,contract',
-                'joining_date'  => 'required|date',
-                'effective_date' => 'required|date|after_or_equal:joining_date',
-                'end_date'      => 'nullable|date|after:effective_date',
-                'image'         => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:5048',
+                // ==================== 1. FULL VALIDATION (ត្រឹមត្រូវ 100%) ====================
+                $request->validate([
+                    // Core
+                    'employee_code' => ['required', 'string', 'max:50', 'unique:employees,employee_code'],
+                    'department_id' => ['required', 'integer', 'exists:departments,id'],
+                    'branch_id'     => ['required', 'integer', 'exists:branches,id'],
+                    'position_id'   => ['required', 'integer', 'exists:positions,id'],
+                    'contract_type' => ['required', 'in:UDC,FDC'],
+                    'employee_type' => ['required', 'in:full_time,part_time,probation,internship,contract'],
 
-                // Personal Info
-                'salutation'    => 'required|in:Mr,Mrs,Ms,Miss,Dr,Prof',
-                'full_name_kh'  => 'required|string|max:255',
-                'full_name_en'  => 'required|string|max:255',
-                'gender'        => 'required|in:male,female',
-                'dob'           => 'required|date|before:today',
-                'marital_status' => 'required|in:single,married,divorced,widowed',
-                'nationality'   => 'required|string|max:100',
-                'religion'      => 'nullable|string|max:100',
-                'blood_group'   => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
-                'bank_account_number' => 'nullable|string|max:50',
+                    'joining_date' => [
+                        'required',
+                        'date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
 
-                // Contact
-                'phone_number'  => 'required|string|regex:/^0[0-9]{8,9}$/',
-                'home_phone'    => 'nullable|string|regex:/^0[0-9]{8,9}$/',
-                'office_phone'  => 'nullable|string|regex:/^0[0-9]{8,9}$/',
-                'email'         => 'required|email|max:255|unique:contacts,email',
+                    'effective_date' => [
+                        'required',
+                        'date',
+                        'after_or_equal:joining_date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
 
-                // Address
-                'city'          => 'required|string|max:100',
-                'province'      => 'required|string|max:100',
-                'country'       => 'required|string|max:100',
-                'address'       => 'required|string|max:500',
+                    'end_date' => [
+                        'nullable',
+                        'date',
+                        'after:effective_date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
 
-                // Identification
-                'identification_type'     => 'nullable|string|max:100',
-                'identification_number'  => 'nullable|string|max:100',
-                'expiration_date'         => 'nullable|date',
+                    'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5048'],
 
-                // ==================== DYNAMIC FIELDS ====================
-                'emergency_contacts' => 'nullable|array',
-                'emergency_contacts.*.contact_person' => 'required_with:emergency_contacts|string|max:255',
-                'emergency_contacts.*.relationship'   => 'required_with:emergency_contacts|string|max:100',
-                'emergency_contacts.*.phone_number'   => 'required_with:emergency_contacts|regex:/^0[0-9]{8,9}$/',
+                    // Personal Info
+                    'salutation' => ['required', 'in:Mr,Mrs,Ms,Miss,Dr,Prof'],
+                    'full_name_kh' => ['required', 'string', 'max:255'],
+                    'full_name_en' => ['required', 'string', 'max:255'],
+                    'gender' => ['required', 'in:male,female'],
 
-                'family_members' => 'nullable|array',
-                'family_members.*.name'         => 'required_with:family_members|string|max:255',
-                'family_members.*.relationship' => 'required_with:family_members|string|max:100',
-                'family_members.*.dob'          => 'nullable|date',
-                'family_members.*.gender'       => 'nullable|in:male,female',
-                'family_members.*.tax_filing'   => 'nullable|in:0,1',
-                'family_members.*.phone_number' => 'nullable|regex:/^0[0-9]{8,9}$/',
-                'family_members.*.remark'       => 'nullable|string',
-                'family_members.*.attachment'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                    'dob' => [
+                        'required',
+                        'date',
+                        'before:today',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
 
-                'education_history' => 'nullable|array',
-                'education_history.*.institute' => 'required_with:education_history|string|max:255',
-                'education_history.*.degree'    => 'required_with:education_history|string|max:255',
-                'education_history.*.subject'   => 'nullable|string|max:255',
-                'education_history.*.start_date' => 'required_with:education_history|date',
-                'education_history.*.end_date'  => 'nullable|date|after_or_equal:education_history.*.start_date',
-                'education_history.*.remark'    => 'nullable|string',
+                    'marital_status' => ['required', 'in:single,married,divorced,widowed'],
+                    'nationality' => ['required', 'string', 'max:100'],
+                    'religion' => ['nullable', 'string', 'max:100'],
+                    'blood_group' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+                    'bank_account_name' => ['nullable', 'string', 'max:50'],
+                    'bank_account_number' => ['nullable', 'string', 'max:20'],
 
-                'employment_history' => 'nullable|array',
-                'employment_history.*.company_name' => 'required_with:employment_history|string|max:255',
-                'employment_history.*.designation'  => 'required_with:employment_history|string|max:255',
-                'employment_history.*.start_date'   => 'required_with:employment_history|date',
-                'employment_history.*.end_date'     => 'nullable|date|after_or_equal:employment_history.*.start_date',
-                'employment_history.*.supervisor_name' => 'nullable|string|max:255',
-                'employment_history.*.rate'         => 'nullable|string|max:50',
-                'employment_history.*.remark'       => 'nullable|string',
-                'employment_history.*.reason_for_leaving' => 'nullable|string',
+                    // Contact
+                    'phone_number' => ['required', 'string', 'regex:/^0[0-9]{8,9}$/'],
+                    'home_phone' => ['nullable', 'string', 'regex:/^0[0-9]{8,9}$/'],
+                    'office_phone' => ['nullable', 'string', 'regex:/^0[0-9]{8,9}$/'],
+                    'email' => ['nullable', 'email', 'max:255', 'unique:contacts,email'],
 
-                'training_history' => 'nullable|array',
-                'training_history.*.institute'  => 'required_with:training_history|string|max:255',
-                'training_history.*.subject'     => 'required_with:training_history|string|max:255',
-                'training_history.*.start_date' => 'required_with:training_history|date',
-                'training_history.*.end_date'   => 'nullable|date|after_or_equal:training_history.*.start_date',
-                'training_history.*.remark'     => 'nullable|string',
-                'training_history.*.attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                    // Address
+                    'city' => ['nullable', 'string', 'max:100'],
+                    'province' => ['nullable', 'string', 'max:100'],
+                    'country' => ['nullable', 'string', 'max:100'],
+                    'address' => ['required', 'string', 'max:500'],
 
-                'achievements' => 'nullable|array',
-                'achievements.*.title'          => 'required_with:achievements|string|max:255',
-                'achievements.*.year_awarded'   => 'nullable|integer|min:1900|max:2100',
-                'achievements.*.country'        => 'nullable|string|max:100',
-                'achievements.*.program_name'   => 'nullable|string|max:255',
-                'achievements.*.organizer_name' => 'nullable|string|max:255',
-                'achievements.*.remark'         => 'nullable|string',
-                'achievements.*.attachment'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                    // Identification
+                    'identification_type' => ['nullable', 'string', 'max:100'],
+                    'identification_number' => ['nullable', 'string', 'max:100'],
 
-                // REQUIRED ATTACHMENTS (យ៉ាងហោចណាស់ 1)
-                'attachments'                => 'required|array|min:1',
-                'attachments.*.name'         => 'required|string|max:255',
-                'attachments.*.file'         => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            ], [
-                'required' => ':attribute ត្រូវតែបំពេញ។',
-                'unique'   => ':attribute នេះមានរួចហើយ។',
-                'phone_number.regex' => 'លេខទូរស័ព្ទត្រូវចាប់ផ្ដើមដោយ 0 និងមាន 9-10 ខ្ទង់។',
-                'attachments.min'    => 'ត្រូវមានឯកសារភ្ជាប់យ៉ាងហោចណាស់ ១។',
-            ]);
+                    'expiration_date' => [
+                        'nullable',
+                        'date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
 
-            // ==================== CREATE EMPLOYEE ====================
-            $imagePath = $request->hasFile('image')
-                ? $request->file('image')->store('employees/profiles', 'public')
-                : null;
+                    // Emergency Contacts
+                    'emergency_contacts' => ['nullable', 'array'],
+                    'emergency_contacts.*.contact_person' => ['required_with:emergency_contacts', 'string', 'max:255'],
+                    'emergency_contacts.*.relationship' => ['required_with:emergency_contacts', 'string', 'max:100'],
+                    'emergency_contacts.*.phone_number' => ['required_with:emergency_contacts', 'regex:/^0[0-9]{8,9}$/'],
 
-            $employee = Employee::create([
-                'employee_code' => $request->employee_code,
-                'user_id'       => $request->user_id,
-                'department_id' => $request->department_id,
-                'branch_id'     => $request->branch_id,
-                'position_id'   => $request->position_id,
-                'image'         => $imagePath,
-                'status'        => 'active',
-            ]);
+                    // Family
+                    'family_members' => ['nullable', 'array'],
+                    'family_members.*.name' => ['required_with:family_members', 'string', 'max:255'],
+                    'family_members.*.relationship' => ['required_with:family_members', 'string', 'max:100'],
+                    'family_members.*.dob' => [
+                        'nullable',
+                        'date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'family_members.*.gender' => ['nullable', 'in:male,female'],
+                    'family_members.*.tax_filing' => ['nullable', 'in:0,1'],
+                    'family_members.*.phone_number' => ['nullable', 'regex:/^0[0-9]{8,9}$/'],
+                    'family_members.*.remark' => ['nullable', 'string'],
+                    'family_members.*.attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
 
-            // ==================== PERSONAL INFO ====================
-            PersonalInfo::create([
-                'employee_id'         => $employee->id,
-                'salutation'          => $request->salutation,
-                'full_name_kh'        => $request->full_name_kh,
-                'full_name_en'        => $request->full_name_en,
-                'gender'              => $request->gender,
-                'dob'                 => $request->dob,
-                'nationality'         => $request->nationality,
-                'marital_status'      => $request->marital_status,
-                'religion'            => $request->religion,
-                'blood_group'         => $request->blood_group,
-                'bank_account_number' => $request->bank_account_number,
-                'contract_type'       => $request->contract_type,
-                'employee_type'       => $request->employee_type,
-                'joining_date'        => $request->joining_date,
-                'effective_date'      => $request->effective_date,
-                'end_date'            => $request->end_date,
-            ]);
+                    // Education
+                    'education_history' => ['nullable', 'array'],
+                    'education_history.*.institute' => ['required_with:education_history', 'string', 'max:255'],
+                    'education_history.*.degree' => ['required_with:education_history', 'string', 'max:255'],
+                    'education_history.*.subject' => ['nullable', 'string', 'max:255'],
+                    'education_history.*.start_date' => [
+                        'required_with:education_history',
+                        'date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'education_history.*.end_date' => [
+                        'nullable',
+                        'date',
+                        'after_or_equal:education_history.*.start_date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'education_history.*.remark' => ['nullable', 'string'],
 
-            // ==================== CONTACT & ADDRESS ====================
-            Contact::create([
-                'employee_id'  => $employee->id,
-                'phone_number' => $request->phone_number,
-                'home_phone'   => $request->home_phone,
-                'office_phone' => $request->office_phone,
-                'email'        => $request->email,
-            ]);
+                    // Employment
+                    'employment_history' => ['nullable', 'array'],
+                    'employment_history.*.company_name' => ['required_with:employment_history', 'string', 'max:255'],
+                    'employment_history.*.designation' => ['required_with:employment_history', 'string', 'max:255'],
+                    'employment_history.*.start_date' => [
+                        'required_with:employment_history',
+                        'date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'employment_history.*.end_date' => [
+                        'nullable',
+                        'date',
+                        'after_or_equal:employment_history.*.start_date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'employment_history.*.supervisor_name' => ['nullable', 'string', 'max:255'],
+                    'employment_history.*.rate' => ['nullable', 'string', 'max:50'],
+                    'employment_history.*.remark' => ['nullable', 'string'],
+                    'employment_history.*.reason_for_leaving' => ['nullable', 'string'],
 
-            Address::create([
-                'employee_id' => $employee->id,
-                'city'        => $request->city,
-                'province'    => $request->province,
-                'country'     => $request->country,
-                'address'     => $request->address,
-            ]);
+                    // Training
+                    'training_history' => ['nullable', 'array'],
+                    'training_history.*.institute' => ['required_with:training_history', 'string', 'max:255'],
+                    'training_history.*.subject' => ['required_with:training_history', 'string', 'max:255'],
+                    'training_history.*.start_date' => [
+                        'required_with:training_history',
+                        'date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'training_history.*.end_date' => [
+                        'nullable',
+                        'date',
+                        'after_or_equal:training_history.*.start_date',
+                        'regex:/^\d{4}-\d{2}-\d{2}$/'
+                    ],
+                    'training_history.*.remark' => ['nullable', 'string'],
+                    'training_history.*.attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
 
-            // ==================== IDENTIFICATION ====================
-            if ($request->filled('identification_type') || $request->filled('identification_number')) {
-                Identification::create([
-                    'employee_id'           => $employee->id,
-                    'identification_type'   => $request->identification_type,
-                    'identification_number' => $request->identification_number,
-                    'expiration_date'       => $request->expiration_date,
+                    // Achievements
+                    'achievements' => ['nullable', 'array'],
+                    'achievements.*.title' => ['required_with:achievements', 'string', 'max:255'],
+                    'achievements.*.year_awarded' => ['nullable', 'integer', 'min:1900', 'max:2100'],
+                    'achievements.*.country' => ['nullable', 'string', 'max:100'],
+                    'achievements.*.program_name' => ['nullable', 'string', 'max:255'],
+                    'achievements.*.organizer_name' => ['nullable', 'string', 'max:255'],
+                    'achievements.*.remark' => ['nullable', 'string'],
+                    'achievements.*.attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+
+                    // Attachments
+                    'attachments' => ['nullable', 'array', 'min:1'],
+                    'attachments.*.name' => ['nullable', 'string', 'max:255'],
+                    'attachments.*.file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:10240'],
+                ], [
+                    'required' => ':attribute ត្រូវតែបំពេញ។',
+                    'unique'   => ':attribute នេះមានរួចហើយ។',
+                    'phone_number.regex' => 'លេខទូរស័ព្ទត្រូវចាប់ផ្ដើមដោយ 0 និងមាន 9-10 ខ្ទង់។',
+                    'attachments.min'    => 'ត្រូវមានឯកសារភ្ជាប់យ៉ាងហោចណាស់ ១។',
                 ]);
-            }
 
-            // ==================== DYNAMIC SECTIONS ====================
-            $this->storeEmergencyContacts($request, $employee);
-            $this->storeFamilyMembers($request, $employee);
-            $this->storeEducationHistory($request, $employee);
-            $this->storeEmploymentHistory($request, $employee);
-            $this->storeTrainingHistory($request, $employee);
-            $this->storeAchievements($request, $employee);
-            $this->storeAttachments($request, $employee);
+
+                // ==================== CREATE EMPLOYEE ====================
+                $imagePath = null;
+                if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                    $imagePath = $request->file('image')->store('employees/profiles', 'public');
+                }
+
+                $employee = Employee::create([
+                    'employee_code' => $request->employee_code,
+                    'department_id' => $request->department_id,
+                    'branch_id'     => $request->branch_id,
+                    'position_id'   => $request->position_id,
+                    'image'         => $imagePath,
+                    'status'        => 'active',
+                ]);
+
+                // ==================== PERSONAL INFO ====================
+                PersonalInfo::create([
+                    'employee_id'         => $employee->id,
+                    'salutation'          => $request->salutation,
+                    'full_name_kh'        => $request->full_name_kh,
+                    'full_name_en'        => $request->full_name_en,
+                    'gender'              => $request->gender,
+                    'dob'                 => $request->dob,
+                    'nationality'         => $request->nationality,
+                    'marital_status'      => $request->marital_status,
+                    'religion'            => $request->religion,
+                    'blood_group'         => $request->blood_group,
+                    'bank_account_name'   => $request->bank_account_name,
+                    'bank_account_number' => $request->bank_account_number,
+                    'contract_type'       => $request->contract_type,
+                    'employee_type'       => $request->employee_type,
+                    'joining_date'        => $request->joining_date,
+                    'effective_date'      => $request->effective_date,
+                    'end_date'            => $request->end_date,
+                ]);
+
+                // ==================== CONTACT & ADDRESS ====================
+                Contact::create([
+                    'employee_id'  => $employee->id,
+                    'phone_number' => $request->phone_number,
+                    'home_phone'   => $request->home_phone,
+                    'office_phone' => $request->office_phone,
+                    'email'        => $request->email,
+                ]);
+
+                Address::create([
+                    'employee_id' => $employee->id,
+                    'city'        => $request->city,
+                    'province'    => $request->province,
+                    'country'     => $request->country,
+                    'address'     => $request->address,
+                ]);
+
+                // ==================== IDENTIFICATION ====================
+                if ($request->filled('identification_type') || $request->filled('identification_number')) {
+                    Identification::create([
+                        'employee_id'           => $employee->id,
+                        'identification_type'   => $request->identification_type,
+                        'identification_number' => $request->identification_number,
+                        'expiration_date'       => $request->expiration_date,
+                    ]);
+                }
+
+                // ==================== DYNAMIC SECTIONS ====================
+                $this->storeEmergencyContacts($request, $employee);
+                $this->storeFamilyMembers($request, $employee);
+                $this->storeEducationHistory($request, $employee);
+                $this->storeEmploymentHistory($request, $employee);
+                $this->storeTrainingHistory($request, $employee);
+                $this->storeAchievements($request, $employee);
+                $this->storeAttachments($request, $employee);
+
+                return redirect()
+                    ->route('hr.employees.index')
+                    ->with('success', 'Created new employee successfully។');
+            });
+        } catch (ValidationException $e) {
+            return redirect()
+                ->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('error', 'Invalid data provided. Please correct the errors and try again.');
+        } catch (\Exception $e) {
+            Log::error('Employee creation failed', [ 
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+                'data'    => $request->except(['image', 'attachments.*.file', 'family_members.*.attachment'])
+            ]);
 
             return redirect()
-                ->route('hr.employees.index')
-                ->with('success', 'បុគ្គលិកត្រូវបានបង្កើតដោយជោគជ័យ!');
-        });
+                ->back()
+                ->withInput()
+                ->with('error', 'An unexpected error occurred while creating the employee. Please try again later.');
+        }
     }
 
-    // ==================== HELPER METHODS (ស្អាត និងអាច reuse បាន) ====================
+    // ==================== HELPER METHODS ====================
 
     private function storeEmergencyContacts($request, $employee)
     {
@@ -388,18 +478,22 @@ class HREmployeeController extends Controller
 
     private function storeAttachments($request, $employee)
     {
+        if (!$request->has('attachments')) return;
+
         foreach ($request->input('attachments', []) as $index => $data) {
             $file = $request->file("attachments.{$index}.file");
-            if ($file && $file->isValid()) {
-                $path = $file->store("employees/{$employee->id}/attachments", 'public');
-                Attachment::create([
-                    'employee_id'     => $employee->id,
-                    'attachment_name' => $data['name'],
-                    'file_path'       => $path,
-                    'mime_type'       => $file->getMimeType(),
-                    'file_size'       => $file->getSize(),
-                ]);
-            }
+
+            if (!$file?->isValid()) continue;
+
+            $path = $file->store("employees/{$employee->id}/attachments", 'public');
+
+            Attachment::create([
+                'employee_id'     => $employee->id,
+                'attachment_name' => $data['name'] ?? 'Untitled',
+                'file_path'       => $path,
+                'mime_type'       => $file->getMimeType(),
+                'file_size'       => $file->getSize(),
+            ]);
         }
     }
     public function show(Employee $employee)
@@ -449,48 +543,88 @@ class HREmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
-        // 1. VALIDATION ដាក់នៅខាងក្រៅ transaction ជាពុំខាន!
+        // ---------------------- 1. VALIDATION ----------------------
         $request->validate([
-            'employee_code' => 'required|string|max:50|unique:employees,employee_code,' . $employee->id,
-            'user_id' => 'required|integer|exists:users,id',
-            'department_id' => 'required|integer|exists:departments,id',
-            'branch_id'     => 'required|integer|exists:branches,id',
-            'position_id'   => 'required|integer|exists:positions,id',
-            'contract_type' => 'required|in:UDC,FDC',
-            'employee_type' => 'required|in:full_time,part_time,probation,internship,contract',
-            'joining_date'  => 'required|date',
-            'effective_date' => 'required|date|after_or_equal:joining_date',
-            'end_date'      => 'nullable|date|after:effective_date',
-            'image'         => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:5048',
-            'status'        => 'required|in:active,inactive',
-            'salutation'    => 'required|in:Mr,Mrs,Ms,Miss,Dr,Prof',
-            'full_name_kh'  => 'required|string|max:255',
-            'full_name_en'  => 'required|string|max:255',
-            'gender'        => 'required|in:male,female',
-            'dob'           => 'required|date|before:today',
-            'marital_status' => 'required|in:single,married,divorced,widowed',
-            'nationality'   => 'required|string|max:100',
-            'phone_number'  => 'required|string|regex:/^0[0-9]{8,9}$/',
-            'email'         => 'required|email|max:255|unique:contacts,email,' . ($employee->contact?->id ?? 'NULL'),
-            'city'          => 'required|string|max:100',
-            'province'      => 'required|string|max:100',
-            'country'       => 'required|string|max:100',
-            'address'       => 'required|string|max:500',
 
-            // Dynamic arrays (សម្រាលបន្តិច)
-            'emergency_contacts' => 'nullable|array',
-            'family_members'     => 'nullable|array',
-            'education_history'  => 'nullable|array',
-            'employment_history' => 'nullable|array',
-            'training_history'   => 'nullable|array',
-            'achievements'       => 'nullable|array',
-            'attachments'        => 'nullable|array',
+            'employee_code' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:employees,employee_code,' . $employee->id
+            ],
+
+            'department_id' => ['required', 'integer', 'exists:departments,id'],
+            'branch_id'     => ['required', 'integer', 'exists:branches,id'],
+            'position_id'   => ['required', 'integer', 'exists:positions,id'],
+            'contract_type' => ['required', 'in:UDC,FDC'],
+            'employee_type' => ['required', 'in:full_time,part_time,probation,internship,contract'],
+
+            'joining_date' => [
+                'required',
+                'date',
+                'regex:/^\d{4}-\d{2}-\d{2}$/'
+            ],
+
+            'effective_date' => [
+                'required',
+                'date',
+                'after_or_equal:joining_date',
+                'regex:/^\d{4}-\d{2}-\d{2}$/'
+            ],
+
+            'end_date' => [
+                'nullable',
+                'date',
+                'after:effective_date',
+                'regex:/^\d{4}-\d{2}-\d{2}$/'
+            ],
+
+            'image'  => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5048'],
+            'status' => ['required', 'in:active,inactive'],
+
+            'salutation' => ['required', 'in:Mr,Mrs,Ms,Miss,Dr,Prof'],
+            'full_name_kh' => ['required', 'string', 'max:255'],
+            'full_name_en' => ['required', 'string', 'max:255'],
+            'gender' => ['required', 'in:male,female'],
+
+            'dob' => [
+                'required',
+                'date',
+                'before:today',
+                'regex:/^\d{4}-\d{2}-\d{2}$/'
+            ],
+
+            'marital_status' => ['required', 'in:single,married,divorced,widowed'],
+            'nationality' => ['required', 'string', 'max:100'],
+
+            'phone_number' => ['required', 'regex:/^0[0-9]{8,9}$/'],
+
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                'unique:contacts,email,' . ($employee->contact->id ?? 'NULL'),
+            ],
+
+            'city' => ['nullable', 'string', 'max:100'],
+            'province' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'address' => ['required', 'string', 'max:500'],
+
+            // Dynamic arrays
+            'emergency_contacts' => ['nullable', 'array'],
+            'family_members'     => ['nullable', 'array'],
+            'education_history'  => ['nullable', 'array'],
+            'employment_history' => ['nullable', 'array'],
+            'training_history'   => ['nullable', 'array'],
+            'achievements'       => ['nullable', 'array'],
+            'attachments'        => ['nullable', 'array'],
         ]);
 
-        // 2. ឥឡូវ transaction សុទ្ធតែ DB operations
+        // ---------------------- 2. TRANSACTION ----------------------
         DB::transaction(function () use ($request, $employee) {
 
-            // Profile image
+            // ----- PROFILE IMAGE -----
             if ($request->hasFile('image')) {
                 if ($employee->image && Storage::disk('public')->exists($employee->image)) {
                     Storage::disk('public')->delete($employee->image);
@@ -499,46 +633,61 @@ class HREmployeeController extends Controller
                 $employee->save();
             }
 
-            // Main employee
+            // ----- MAIN EMPLOYEE -----
             $employee->update([
                 'employee_code' => $request->employee_code,
-                'user_id'       => $request->user_id,
                 'department_id' => $request->department_id,
                 'status'        => $request->status,
                 'branch_id'     => $request->branch_id,
                 'position_id'   => $request->position_id,
             ]);
 
-            // កូដដដែលៗ...
-            $personalFields = [
-                'joining_date',
-                'contract_type',
-                'employee_type',
-                'effective_date',
-                'end_date',
-                'salutation',
-                'full_name_kh',
-                'full_name_en',
-                'gender',
-                'dob',
-                'nationality',
-                'religion',
-                'blood_group',
-                'marital_status',
-                'bank_account_number'
-            ];
-            $employee->personalInfo()->updateOrCreate(['employee_id' => $employee->id], $request->only($personalFields));
-            $employee->contact()->updateOrCreate(['employee_id' => $employee->id], $request->only(['phone_number', 'home_phone', 'office_phone', 'email']));
-            $employee->address()->updateOrCreate(['employee_id' => $employee->id], $request->only(['city', 'province', 'country', 'address']));
+            // ----- PERSONAL INFO -----
+            $employee->personalInfo()->updateOrCreate(
+                ['employee_id' => $employee->id],
+                $request->only([
+                    'joining_date',
+                    'contract_type',
+                    'employee_type',
+                    'effective_date',
+                    'end_date',
+                    'salutation',
+                    'full_name_kh',
+                    'full_name_en',
+                    'gender',
+                    'dob',
+                    'nationality',
+                    'religion',
+                    'blood_group',
+                    'marital_status',
+                    'bank_account_name',
+                    'bank_account_number'
+                ])
+            );
 
+            // ----- CONTACT -----
+            $employee->contact()->updateOrCreate(
+                ['employee_id' => $employee->id],
+                $request->only(['phone_number', 'home_phone', 'office_phone', 'email'])
+            );
+
+            // ----- ADDRESS -----
+            $employee->address()->updateOrCreate(
+                ['employee_id' => $employee->id],
+                $request->only(['city', 'province', 'country', 'address'])
+            );
+
+            // ----- IDENTIFICATION -----
             if ($request->filled('identification_type') || $request->filled('identification_number')) {
-                $employee->identification()->updateOrCreate(['employee_id' => $employee->id], $request->only(['identification_type', 'identification_number', 'expiration_date']));
+                $employee->identification()->updateOrCreate(
+                    ['employee_id' => $employee->id],
+                    $request->only(['identification_type', 'identification_number', 'expiration_date'])
+                );
             } else {
                 $employee->identification()?->delete();
             }
- 
 
-            // Sync all dynamic sections
+            // ----- Dynamic Sections -----
             $this->syncEmergencyContacts($request, $employee);
             $this->syncFamilyMembers($request, $employee);
             $this->syncEducationHistory($request, $employee);
@@ -548,11 +697,12 @@ class HREmployeeController extends Controller
             $this->syncAttachments($request, $employee);
         });
 
-        // 3. redirect នៅខាងក្រៅ ជានិច្ច!
+        // ---------------------- 3. REDIRECT ----------------------
         return redirect()
             ->route('hr.employees.index')
             ->with('success', 'បុគ្គលិកត្រូវបានកែប្រែដោយជោគជ័យ!');
     }
+
     // Sync Emergency Contacts
     private function syncEmergencyContacts($request, $employee)
     {

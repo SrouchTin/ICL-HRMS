@@ -21,6 +21,7 @@ class PersonalInfo extends Model
         'nationality',
         'blood_group',
         'religion',
+        'bank_account_name',
         'bank_account_number',
         'tax_number',
         'joining_date',

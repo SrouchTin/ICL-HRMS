@@ -25,7 +25,7 @@
         </a>
 
         <!-- VIEW EMPLOYEES (Read-Only – No Edit/Delete) -->
-        <a href="{{ route('admin.employees.index') }}"
+        <a href="#"
            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base {{ request()->routeIs('admin.employees.*') ? 'bg-indigo-700 font-medium shadow-lg' : '' }}">
             <i class="fas fa-users w-5"></i>
             <span>View Employees</span>

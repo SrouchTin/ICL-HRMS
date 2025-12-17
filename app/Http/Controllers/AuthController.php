@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -13,57 +15,67 @@ class AuthController extends Controller
         if (Auth::check()) {
             return $this->redirectBasedOnRole();
         }
+
         return view('auth.login');
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string|min:6',
+            'username' => 'required|string|max:255',
+            'password' => 'required|string',
+            'remember' => 'sometimes|boolean',
         ]);
 
-        $credentials = $request->only('email', 'password');
-        $remember    = $request->filled('remember');
+        $input = trim($request->username);
 
-        if (! Auth::attempt($credentials, $remember)) {
+        $user = User::whereRaw('LOWER(TRIM(username)) = ?', [strtolower($input)])
+            ->with(['employee.personalInfo', 'role'])
+            ->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => 'អ៊ីមែល ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវ។',
+                'username' => 'ឈ្មោះអ្នកប្រើ ឬ លេខកូដបុគ្គលិក មិនត្រឹមត្រូវ។',
             ]);
         }
 
-        $user = Auth::user();
-
-        // ONLY block if:
-        // 1. User account is not active, OR
-        // 2. User has employee record AND it's not active
-        if (
-            $user->status !== 'active' ||
-            ($user->employee && $user->employee->status !== 'active')
-        ) {
-            Auth::logout();
-
-            $reasons = [];
-            if ($user->status !== 'active') {
-                $reasons[] = "គណនី: " . ucfirst($user->status);
-            }
-            if ($user->employee && $user->employee->status !== 'active') {
-                $reasons[] = "បុគ្គលិក: " . ucfirst($user->employee->status);
-            }
-
+        // 1) check user active
+        if ($user->status !== 'active') {
             throw ValidationException::withMessages([
-                'email' => 'គណនីមិនអនុញ្ញាតឱ្យចូលប្រើ។ ' . implode(' | ', $reasons),
+                'username' => 'គណនីរបស់អ្នកត្រូវបានផ្អាក។',
             ]);
         }
 
+        // normalize role
+        $roleName = strtolower(str_replace(' ', '_', trim($user->role?->name ?? '')));
+        $isAdmin = in_array($roleName, ['admin', 'super_admin']);
+
+        // 2) non-admin must have employee and that employee must be active
+        if (!$isAdmin) {
+            if (!$user->employee_id || !$user->employee) {
+                throw ValidationException::withMessages([
+                    'username' => 'គណនីរបស់អ្នកមិនទាន់បានភ្ជាប់ជាមួយបុគ្គលិក។ សូមទាក់ទងផ្នែក HR។',
+                ]);
+            }
+
+            if ($user->employee->status !== 'active') {
+                throw ValidationException::withMessages([
+                    'username' => 'បុគ្គលិករបស់អ្នកមិនទាន់អនុញ្ញាត។',
+                ]);
+            }
+        }
+
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
         return $this->redirectBasedOnRole();
     }
 
+
+
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        Auth::logout(); // ← គ្រប់គ្រាន់ហើយ មិនចាំបាច់ guard('web')
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -73,12 +85,13 @@ class AuthController extends Controller
     private function redirectBasedOnRole()
     {
         $user = Auth::user();
-        $roleName = optional($user->role)->name ?? 'employee';
+        $roleName = strtolower(trim($user->role?->name ?? 'employee'));
 
         return match ($roleName) {
-            'admin'     => redirect()->route('admin.dashboard'),
-            'hr'        => redirect()->route('hr.dashboard'),
-            default     => redirect()->route('employee.dashboard'),
+            'admin', 'super_admin', 'super admin' => redirect()->route('admin.dashboard'),
+            'hr', 'human resource'                 => redirect()->route('hr.dashboard'),
+            'employee', 'user'                     => redirect()->route('employee.dashboard'),
+            default                                => redirect()->route('employee.dashboard'),
         };
     }
 }
