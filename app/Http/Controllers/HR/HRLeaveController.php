@@ -37,11 +37,8 @@ class HRLeaveController extends Controller
         }
 
         $leaves = $query->paginate(10);
-
-        // Get all leave types for filter dropdown
         $leaveTypes = LeaveType::all();
 
-        // Get recent leaves for notifications
         $recentLeaves = Leave::with(['employee', 'leaveType'])
             ->where('status', 'Pending')
             ->latest()
@@ -70,55 +67,58 @@ class HRLeaveController extends Controller
         ));
     }
 
-    public function approve($id)
-    {
-        $leave = Leave::findOrFail($id);
+public function approve(Leave $leave)
+{
+    if ($leave->status !== 'Pending') {
+        return back()->with('error', 'Only pending leaves can be approved.');
+    }
 
-        // Approve the leave
+    DB::transaction(function () use ($leave) {
+        // 1. Mark leave as approved
         $leave->update([
-            'status' => 'Approved',
+            'status'      => 'Approved',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
 
-        // Update leave balance
-        $year = \Carbon\Carbon::parse($leave->from_date)->year;
+        // 2. Deduct from balance
+        $year = now()->year; // 2025
 
-        $balance = LeaveBalance::firstOrCreate(
-            [
-                'employee_id' => $leave->employee_id,
-                'leave_type_id' => $leave->leave_type_id,
-                'year' => $year,
-            ],
-            [
-                'total_days' => 0,
-                'used_days' => 0,
-                'remaining_days' => 0,
-            ]
-        );
+        $updated = DB::table('leave_balances')
+            ->where('employee_id', $leave->employee_id)
+            ->where('leave_type_id', $leave->leave_type_id)
+            ->where('year', $year)
+            ->increment('used_days', $leave->leave_days); // e.g., +1.0 or +0.5
 
-        // Increase used_days, decrease remaining_days
-        $balance->increment('used_days', $leave->leave_days);
-        $balance->decrement('remaining_days', $leave->leave_days);
+        if ($updated > 0) {
+            // Recalculate remaining_days
+            DB::table('leave_balances')
+                ->where('employee_id', $leave->employee_id)
+                ->where('leave_type_id', $leave->leave_type_id)
+                ->where('year', $year)
+                ->update(['remaining_days' => DB::raw('total_days - used_days')]);
+        }
+    });
 
-        return redirect()->back()->with('success', 'Leave approved and balance updated.');
-    }
+    return back()->with('success', 'Leave approved and balance updated!');
+}
 
-    public function reject(Request $request, $id)
-    {
-        $request->validate([
-            'reject_reason' => 'nullable|string|max:500',
-        ]);
+public function reject(Request $request, Leave $leave)
+{
+    $request->validate([
+        'reject_reason' => 'required|string|max:500',
+    ]);
 
-        $leave = Leave::findOrFail($id);
+    $leave->update([
+        'status' => 'rejected', // match your DB value
+        'reject_reason' => $request->reject_reason,
+        'rejected_by' => Auth::id(),    
+        'rejected_at' => now(),          
+        
+        'approved_by' => null,
+        'approved_at' => null,
+    ]);
 
-        $leave->update([
-            'status' => 'Rejected',
-            'reject_reason' => $request->reject_reason,
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', 'Leave request rejected.');
-    }
+    return redirect()->back()->with('success', 'Leave request rejected successfully.');
+}
 }

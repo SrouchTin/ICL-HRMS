@@ -35,7 +35,7 @@
         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base opacity-70">
             <i class="fas fa-clock w-5"></i><span>Attendance</span>
         </a>
-        <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base opacity-70">
+        <a href="{{ route('admin.leave.requests') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base opacity-70">
             <i class="fas fa-calendar-check w-5"></i><span>Leave Requests</span>
         </a>
         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base opacity-70">

@@ -12,7 +12,7 @@
 <body class="bg-gray-100 font-sans antialiased">
 <div x-data="{ sidebarOpen: false, notificationOpen: false }" class="flex h-screen overflow-hidden">
 
-    @include('layout.hrSidebar')
+    @include('layout.adminSidebar')
 
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Header -->

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Leave Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100 p-8">
+
+<div x-data="debugForm()" x-init="init()" class="max-w-4xl mx-auto">
+    
+    <!-- Debug Panel -->
+    <div class="bg-yellow-100 border-2 border-yellow-400 p-6 rounded-lg mb-6">
+        <h2 class="font-bold text-xl mb-4">🐛 DEBUG PANEL</h2>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><strong>employee_id:</strong> <span x-text="employee_id || 'EMPTY'"></span></div>
+            <div><strong>leave_type_id:</strong> <span x-text="leave_type_id || 'EMPTY'"></span></div>
+            <div><strong>leave_for:</strong> <span x-text="leave_for"></span></div>
+            <div><strong>from_date:</strong> <span x-text="from_date || 'EMPTY'"></span></div>
+            <div><strong>to_date:</strong> <span x-text="to_date || 'EMPTY'"></span></div>
+            <div><strong>requestedDays:</strong> <span x-text="requestedDays"></span></div>
+            <div><strong>remainingBalance:</strong> <span x-text="remainingBalance"></span></div>
+            <div><strong>showBalance:</strong> <span x-text="showBalance"></span></div>
+            <div class="col-span-2"><strong>canSubmit:</strong> <span x-text="canSubmit" :class="canSubmit ? 'text-green-600' : 'text-red-600'"></span></div>
+        </div>
+        <div class="mt-4 p-3 bg-white rounded">
+            <strong>Why can't submit?</strong>
+            <ul class="list-disc pl-6 mt-2">
+                <li x-show="!employee_id">❌ No employee selected</li>
+                <li x-show="!leave_type_id">❌ No leave type selected</li>
+                <li x-show="!from_date">❌ No from_date</li>
+                <li x-show="leave_for === 'full_day' && !to_date">❌ Full day needs to_date</li>
+                <li x-show="requestedDays <= 0">❌ Requested days is 0 or less</li>
+                <li x-show="showBalance && requestedDays > remainingBalance">❌ Insufficient balance</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <form method="POST" action="#" @submit="handleSubmit($event)" class="space-y-6">
+            
+            <!-- Employee -->
+            <div>
+                <label class="block font-medium mb-2">Employee <span class="text-red-600">*</span></label>
+                <select name="employee_id" x-model="employee_id" @change="onChange()" required class="w-full border rounded-lg px-4 py-3">
+                    <option value="">-- Select Employee --</option>
+                    <option value="1">EMP001 - John Doe</option>
+                    <option value="2">EMP002 - Jane Smith</option>
+                    <option value="3">EMP003 - Bob Johnson</option>
+                </select>
+            </div>
+
+            <!-- Leave Type -->
+            <div>
+                <label class="block font-medium mb-2">Leave Type <span class="text-red-600">*</span></label>
+                <select name="leave_type_id" x-model="leave_type_id" @change="onChange()" required class="w-full border rounded-lg px-4 py-3">
+                    <option value="">-- Select Leave Type --</option>
+                    <option value="1">Annual Leave</option>
+                    <option value="2">Sick Leave</option>
+                    <option value="3">Personal Leave</option>
+                </select>
+            </div>
+
+            <!-- Leave For -->
+            <div>
+                <label class="block font-medium mb-3">Leave For <span class="text-red-600">*</span></label>
+                <div class="flex gap-10">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="leave_for" value="full_day" x-model="leave_for" @change="calculate()" class="w-5 h-5" checked>
+                        <span>Full Day</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="leave_for" value="half_day" x-model="leave_for" @change="calculate()" class="w-5 h-5">
+                        <span>Half Day</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block font-medium mb-2">From Date <span class="text-red-600">*</span></label>
+                    <input type="date" name="from_date" x-model="from_date" @change="calculate()" required class="w-full border rounded-lg px-4 py-3">
+                </div>
+                <div>
+                    <label class="block font-medium mb-2">To Date <span x-show="leave_for === 'full_day'" class="text-red-600">*</span></label>
+                    <input type="date" 
+                           name="to_date" 
+                           x-model="to_date" 
+                           @change="calculate()" 
+                           :disabled="leave_for === 'half_day'"
+                           :required="leave_for === 'full_day'"
+                           class="w-full border rounded-lg px-4 py-3 disabled:bg-gray-100">
+                </div>
+            </div>
+
+            <!-- Leave Period -->
+            <div>
+                <label class="block font-medium mb-2">Leave Period</label>
+                <input type="text" x-model="leavePeriod" readonly class="w-full border rounded-lg px-4 py-3 bg-gray-100">
+            </div>
+
+            <!-- Reason -->
+            <div>
+                <label class="block font-medium mb-2">Reason <span class="text-red-600">*</span></label>
+                <textarea name="reason" rows="4" required placeholder="Enter reason..." class="w-full border rounded-lg px-4 py-3"></textarea>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex gap-4 pt-4">
+                <button type="button" @click="testSubmit()" class="px-6 py-3 bg-purple-600 text-white rounded-lg">
+                    🧪 Test Submit (Console Log)
+                </button>
+                <button type="submit"
+                        :disabled="!canSubmit"
+                        :class="canSubmit ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'"
+                        class="px-8 py-3 text-white rounded-lg font-semibold">
+                    Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function debugForm() {
+        return {
+            employee_id: '',
+            leave_type_id: '',
+            leave_for: 'full_day',
+            from_date: '',
+            to_date: '',
+            leavePeriod: '',
+            requestedDays: 0,
+            remainingBalance: 10, // Simulated balance
+            showBalance: false,
+
+            get canSubmit() {
+                console.log('🔍 Checking canSubmit...');
+                console.log('employee_id:', this.employee_id);
+                console.log('leave_type_id:', this.leave_type_id);
+                console.log('from_date:', this.from_date);
+                console.log('leave_for:', this.leave_for);
+                console.log('to_date:', this.to_date);
+                console.log('requestedDays:', this.requestedDays);
+                console.log('remainingBalance:', this.remainingBalance);
+                
+                const hasRequiredFields = this.employee_id &&
+                       this.leave_type_id &&
+                       this.from_date &&
+                       (this.leave_for === 'half_day' || this.to_date) &&
+                       this.requestedDays > 0;
+                
+                if (this.showBalance) {
+                    const result = hasRequiredFields && this.requestedDays <= this.remainingBalance;
+                    console.log('✅ Final result (with balance check):', result);
+                    return result;
+                }
+                
+                console.log('✅ Final result (no balance check):', hasRequiredFields);
+                return hasRequiredFields;
+            },
+
+            init() {
+                console.log('🚀 Form initialized');
+            },
+
+            onChange() {
+                console.log('📊 Selection changed');
+                if (this.employee_id && this.leave_type_id) {
+                    this.showBalance = true;
+                    this.remainingBalance = 10; // Simulated
+                }
+            },
+
+            calculate() {
+                console.log('🧮 Calculating...');
+                this.leavePeriod = '';
+                this.requestedDays = 0;
+
+                if (!this.from_date) return;
+
+                if (this.leave_for === 'half_day') {
+                    this.leavePeriod = 'Half day (0.5 day)';
+                    this.requestedDays = 0.5;
+                    this.to_date = '';
+                    return;
+                }
+
+                if (!this.to_date) return;
+
+                if (this.to_date < this.from_date) {
+                    this.leavePeriod = 'Invalid date range';
+                    this.requestedDays = 0;
+                    return;
+                }
+
+                const from = new Date(this.from_date);
+                const to = new Date(this.to_date);
+                const days = Math.floor((to - from) / 86400000) + 1;
+
+                this.requestedDays = days;
+                this.leavePeriod = days === 1 ? '1 day' : `${days} days`;
+            },
+
+            testSubmit() {
+                console.log('🧪 TEST SUBMIT CLICKED');
+                console.log('All form data:', {
+                    employee_id: this.employee_id,
+                    leave_type_id: this.leave_type_id,
+                    leave_for: this.leave_for,
+                    from_date: this.from_date,
+                    to_date: this.to_date,
+                    requestedDays: this.requestedDays,
+                    canSubmit: this.canSubmit
+                });
+                alert('Check the browser console (F12) for details!');
+            },
+
+            handleSubmit(event) {
+                console.log('📤 FORM SUBMITTED!');
+                event.preventDefault();
+                alert('Form would submit! Check console for data.');
+                const formData = new FormData(event.target);
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+            }
+        };
+    }
+</script>
+
+</body>
+</html>

@@ -9,6 +9,7 @@ use App\Http\Controllers\HR\HREmployeeController;
 use App\Http\Controllers\Employee\EmployeeLeaveController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\HR\HRLeaveController;
+use App\Http\Controllers\Admin\AdminLeaveController;
 use Illuminate\Support\Facades\Auth;
 // ==================== 1. Root Route - កែឲ្យមាំមួន 100% ====================
 Route::get('/', function () {
@@ -52,6 +53,10 @@ Route::middleware('auth')->group(function () {
                 ->name('users.reset-password');
             Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
                 ->name('users.toggleStatus');
+
+            Route::get('/leave/requests', [AdminLeaveController::class, 'index'])->name('leave.requests');
+            Route::patch('/leave/{leave}/approve', [AdminLeaveController::class, 'approve'])->name('leave.approve');
+            Route::patch('/leave/{leave}/reject', [AdminLeaveController::class, 'reject'])->name('aleave.reject');
         });
 
     // ==================== HR ====================
@@ -65,12 +70,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/leave-requests', [HRLeaveController::class, 'index'])
             ->name('leave.requests');
 
-        Route::post('/leave/{id}/approve', [HRLeaveController::class, 'approve'])
+        Route::patch('/leave-requests/{leave}/approve', [HRLeaveController::class, 'approve'])
             ->name('leave.approve');
 
-        Route::post('/leave/{id}/reject', [HRLeaveController::class, 'reject'])
-            ->name('leave.reject');
-    });
+        Route::post('/leave/{leave}/reject', [HRLeaveController::class, 'reject'])
+        ->name('leave.reject');
+        });
 
     // ==================== EMPLOYEE ====================
     Route::prefix('employee')
@@ -92,6 +97,10 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/leave-balance', [EmployeeLeaveController::class, 'getBalance'])
                 ->name('leave.balance');
+
+            Route::get('/employee/person-incharge-available', [EmployeeLeaveController::class, 'getAvailablePersonInCharge'])
+                ->name('person.incharge.available')
+                ->middleware('auth');
         });
 });
 
