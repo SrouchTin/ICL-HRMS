@@ -60,7 +60,7 @@
                 <div class="px-8 py-5 flex justify-between items-center">
                     <h1 class="text-2xl font-bold text-gray-800">My Profile</h1>
                     <a href="{{ route('employee.dashboard') }}"
-                        class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2">
+                        class="text-white bg-indigo-600 hover:bg-indigo-600 hover:text-white rounded-md p-2 font-medium flex items-center gap-2">
                         <i class="fas fa-arrow-left"></i> Back to Dashboard
                     </a>
                 </div>

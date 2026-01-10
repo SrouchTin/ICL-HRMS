@@ -18,12 +18,16 @@ class Role extends Model
     ];
 
     public function users()
-    {
-        return $this->hasMany(User::class);
-    }
+        {
+            return $this->belongsToMany(User::class, 'role_user');
+      }
 
     public function hasUser(int $userId): bool
     {
         return $this->users()->where('id', $userId)->exists();
+    }
+    public function isHR(): bool
+    {
+        return $this->hasRole('hr');
     }
 }

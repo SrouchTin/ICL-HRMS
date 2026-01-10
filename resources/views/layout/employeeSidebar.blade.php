@@ -1,5 +1,4 @@
-<!-- Sidebar - Same Indigo Theme as HR -->
-
+<!-- Supervisor/Employee Sidebar (Shows approvals link if employee is a supervisor) -->
 <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     class="fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out lg:w-60 lg:translate-x-0 lg:static lg:z-auto">
 
@@ -11,7 +10,7 @@
             </div>
             <div>
                 <h2 class="text-xl font-bold">Employee</h2>
-                
+                <p class="text-xs text-indigo-300">{{ Auth::user()->username }}</p>
             </div>
         </div>
         <button @click="sidebarOpen = false" class="lg:hidden p-2 hover:bg-indigo-700 rounded-lg">
@@ -32,16 +31,41 @@
             <span>My Profile</span>
         </a>
 
-        <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base">
+        <a href="{{ route('employee.attendance.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base">
             <i class="fas fa-clock w-5"></i>
             <span>Attendance</span>
         </a>
 
-        <a href="{{ route('employee.leaves.index') }}"
-            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base {{ request()->routeIs('employee.leaves.*') ? 'bg-indigo-700 font-medium shadow' : '' }}">
+        <a href="{{ route('employee.leaves.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base 
+                {{ request()->routeIs('employee.leaves.index') ? 'bg-indigo-700 font-medium shadow' : '' }}">
             <i class="fas fa-calendar-times w-5"></i>
-            <span>Leave Requests</span>
+            <span>My Leave Requests</span>
         </a>
+
+        @php
+            $pendingApprovalsCount = Auth::user()->employee?->leavesToApprove()->where('status', 'Pending')->count() ?? 0;
+        @endphp
+
+        @if($pendingApprovalsCount > 0)
+            <a href="{{ route('employee.leaves.pending') }}" class="group relative flex items-center px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base
+                   {{ request()->routeIs('employee.leaves.pending') ? 'bg-indigo-700 font-medium shadow' : '' }}">
+                <i class="fas fa-tasks w-5 text-indigo-300 group-hover:text-white"></i>
+
+                <span class="ml-3 flex-1 truncate">Leave Approvals</span>
+
+                <!-- Badge -->
+                <span
+                    class="ml-auto inline-flex items-center justify-center bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full min-w-[20px] h-5">
+                    {{ $pendingApprovalsCount > 99 ? '99+' : $pendingApprovalsCount }}
+                </span>
+
+                <!-- Tooltip when text is truncated (optional but nice) -->
+                <span
+                    class="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
+                    Leave Approvals ({{ $pendingApprovalsCount }} pending)
+                </span>
+            </a>
+        @endif
 
         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-indigo-700 transition text-base">
             <i class="fas fa-route w-5"></i>

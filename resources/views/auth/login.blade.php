@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sign In • HR Management System</title>
-
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Font: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="{{ asset('assets/toast/css.css') }}" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -108,6 +107,7 @@
 </head>
 <body>
 
+@include('toastify.toast')
 <div class="login-card">
     <!-- Header -->
     <div class="login-header">
@@ -210,6 +210,7 @@
     </div>
 </div>
 
+<script src="{{ asset('assets/toast/script.js') }}"></script>
 <!-- Bootstrap Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

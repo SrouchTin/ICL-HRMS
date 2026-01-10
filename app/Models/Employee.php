@@ -17,6 +17,12 @@ use App\Models\EducationHistory;
 use App\Models\TrainingHistory;
 use App\Models\EmploymentHistory;
 use App\Models\Attachment;
+use App\Models\Achievement;
+use App\Models\Leave;
+use App\Models\LeaveBalance;
+use App\Models\EmployeeSchedule;
+use App\Models\Attendance;
+use Carbon\Carbon;
 
 class Employee extends Model
 {
@@ -33,13 +39,24 @@ class Employee extends Model
         'contract_type',
         'employment_type',
         'status',
+        'supervisor_id',
     ];
     
+    public function supervisor() {
+            return $this->belongsTo(Employee::class, 'supervisor_id');
+        }
 
-public function user()
-{
-    return $this->hasOne(User::class, 'employee_id', 'id');
-}
+        public function supervisees() {
+            return $this->hasMany(Employee::class, 'supervisor_id');
+        }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class, 'user_id');
+    // }
+        public function user()
+    {
+        return $this->hasOne(User::class); // Important: hasOne, not belongsTo
+    }
 
     public function department()
     {
@@ -117,4 +134,78 @@ public function user()
     {
         return $this->hasMany(Leave::class);
     }
+    public function subordinates()
+    {
+        return $this->hasMany(Employee::class, 'supervisor_id');
+    }
+    public function leaveBalances()
+    {
+        return $this->hasMany(LeaveBalance::class, 'employee_id');
+    }
+
+    /**
+     * Check if this employee has any subordinates
+     */
+    public function isSupervisor()
+    {
+        return $this->subordinates()->exists();
+    }
+
+    /**
+     * Get pending leave approvals count for this employee
+     */
+    public function getPendingApprovalsCountAttribute()
+    {
+        return $this->leavesToApprove()->where('status', 'Pending')->count();
+    }
+       public function leavesToApprove()
+    {
+        return $this->hasMany(Leave::class, 'approver_id');
+    }
+
+    /**
+     * Get all leave requests where this employee is the person in charge
+     */
+    public function leavesAsPersonInCharge()
+    {
+        return $this->hasMany(Leave::class, 'person_incharge_id');
+    }
+    public function employeeSchedules()
+    {
+        return $this->hasMany(EmployeeSchedule::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+    // === THIS IS THE FIX ===
+    public function getNameAttribute()
+    {
+        return $this->personalInfo?->full_name_en ?? 'Unknown Employee';
+    }
+
+    // Optional: Khmer name
+    public function getNameKhAttribute()
+    {
+        return $this->personalInfo?->full_name_kh;
+    }
+
+    // Optional: Employee ID accessor if needed
+    public function getEmployeeIdAttribute()
+    {
+        return $this->employee_code;
+    }
+    public function currentShift($date = null)
+{
+    $date = $date ? Carbon::parse($date) : Carbon::today();
+
+    return $this->hasOne(EmployeeSchedule::class)
+        ->where('start_date', '<=', $date)
+        ->where(function ($query) use ($date) {
+            $query->where('end_date', '>=', $date)
+                  ->orWhereNull('end_date');
+        })
+        ->with('shift'); // load the actual shift details
+}
 }

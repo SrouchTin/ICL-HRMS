@@ -16,7 +16,7 @@ class RoleMiddleware
 
         $user = Auth::user();
 
-        // គាំទ្រ column ឈ្មោះអ្វីក៏បាន (name, role_name, title...)
+
         $roleName = $user->role?->name 
                  ?? $user->role?->role_name 
                  ?? $user->role?->title 
@@ -28,7 +28,7 @@ class RoleMiddleware
 
         $userRole = strtolower(trim($roleName));
 
-        // ពិនិត្យ role ដែលអនុញ្ញាត
+     
         foreach ($roles as $allowed) {
             if ($userRole === strtolower(trim($allowed))) {
                 return $next($request);

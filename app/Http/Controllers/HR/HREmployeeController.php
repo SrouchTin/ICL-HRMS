@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
@@ -59,19 +58,7 @@ class HREmployeeController extends Controller
         $branches    = Branch::where('status', 'active')->get();
         $positions   = Position::where('status', 'active')->get();
 
-        // THIS IS THE FIX — create a dummy employee with empty collections
-        $employee = new \App\Models\Employee();
-
-        // Initialize all relationships as empty collections so Blade doesn't crash
-        $employee->setRelation('educationHistories', collect());
-        $employee->setRelation('trainingHistories',  collect());
-        $employee->setRelation('employmentHistories', collect());
-        $employee->setRelation('achievements',       collect());
-        $employee->setRelation('emergencyContacts',  collect());
-        $employee->setRelation('familyMembers',      collect());
-        $employee->setRelation('attachments',        collect());
-
-        return view('hr.employees.create', compact('employee', 'departments', 'branches', 'positions'));
+        return view('hr.employees.create', compact('departments', 'branches', 'positions'));
     }
 
     public function store(Request $request)
@@ -88,7 +75,7 @@ class HREmployeeController extends Controller
                     'position_id'   => ['required', 'integer', 'exists:positions,id'],
                     'contract_type' => ['required', 'in:UDC,FDC'],
                     'employee_type' => ['required', 'in:full_time,part_time,probation,internship,contract'],
-
+                    'supervisor_id' => ['nullable', 'exists:employees,id'],
                     'joining_date' => [
                         'required',
                         'date',
@@ -263,6 +250,7 @@ class HREmployeeController extends Controller
                     'department_id' => $request->department_id,
                     'branch_id'     => $request->branch_id,
                     'position_id'   => $request->position_id,
+                    'supervisor_id' => $request->supervisor_id,
                     'image'         => $imagePath,
                     'status'        => 'active',
                 ]);
@@ -545,7 +533,6 @@ class HREmployeeController extends Controller
     {
         // ---------------------- 1. VALIDATION ----------------------
         $request->validate([
-
             'employee_code' => [
                 'required',
                 'string',
@@ -556,46 +543,50 @@ class HREmployeeController extends Controller
             'department_id' => ['required', 'integer', 'exists:departments,id'],
             'branch_id'     => ['required', 'integer', 'exists:branches,id'],
             'position_id'   => ['required', 'integer', 'exists:positions,id'],
+            'status'        => ['required', 'in:active,inactive'],
+
+            // Supervisor: nullable (can be "No Supervisor"), must exist if provided
+            'supervisor_id' => ['nullable', 'integer', 'exists:employees,id', 'different:id'], // Prevent self-supervision
+
             'contract_type' => ['required', 'in:UDC,FDC'],
             'employee_type' => ['required', 'in:full_time,part_time,probation,internship,contract'],
 
             'joining_date' => [
                 'required',
                 'date',
-                'regex:/^\d{4}-\d{2}-\d{2}$/'
+                'date_format:Y-m-d'
             ],
 
             'effective_date' => [
                 'required',
                 'date',
-                'after_or_equal:joining_date',
-                'regex:/^\d{4}-\d{2}-\d{2}$/'
+                'date_format:Y-m-d',
+                'after_or_equal:joining_date'
             ],
 
             'end_date' => [
                 'nullable',
                 'date',
-                'after:effective_date',
-                'regex:/^\d{4}-\d{2}-\d{2}$/'
+                'date_format:Y-m-d',
+                'after:effective_date'
             ],
 
-            'image'  => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5048'],
-            'status' => ['required', 'in:active,inactive'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5048'],
 
-            'salutation' => ['required', 'in:Mr,Mrs,Ms,Miss,Dr,Prof'],
-            'full_name_kh' => ['required', 'string', 'max:255'],
-            'full_name_en' => ['required', 'string', 'max:255'],
-            'gender' => ['required', 'in:male,female'],
+            'salutation'     => ['required', 'in:Mr,Mrs,Ms,Miss,Dr,Prof'],
+            'full_name_kh'   => ['required', 'string', 'max:255'],
+            'full_name_en'   => ['required', 'string', 'max:255'],
+            'gender'         => ['required', 'in:male,female'],
 
             'dob' => [
                 'required',
                 'date',
-                'before:today',
-                'regex:/^\d{4}-\d{2}-\d{2}$/'
+                'date_format:Y-m-d',
+                'before:today'
             ],
 
             'marital_status' => ['required', 'in:single,married,divorced,widowed'],
-            'nationality' => ['required', 'string', 'max:100'],
+            'nationality'    => ['nullable', 'string', 'max:100'],
 
             'phone_number' => ['required', 'regex:/^0[0-9]{8,9}$/'],
 
@@ -603,22 +594,22 @@ class HREmployeeController extends Controller
                 'nullable',
                 'email',
                 'max:255',
-                'unique:contacts,email,' . ($employee->contact->id ?? 'NULL'),
+                'unique:contacts,email,' . ($employee->contact?->id ?? 'NULL')
             ],
 
-            'city' => ['nullable', 'string', 'max:100'],
+            'city'     => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'address' => ['required', 'string', 'max:500'],
+            'country'  => ['nullable', 'string', 'max:100'],
+            'address'  => ['required', 'string', 'max:500'],
 
             // Dynamic arrays
-            'emergency_contacts' => ['nullable', 'array'],
-            'family_members'     => ['nullable', 'array'],
-            'education_history'  => ['nullable', 'array'],
-            'employment_history' => ['nullable', 'array'],
-            'training_history'   => ['nullable', 'array'],
-            'achievements'       => ['nullable', 'array'],
-            'attachments'        => ['nullable', 'array'],
+            'emergency_contacts.*' => ['nullable', 'array'],
+            'family_members.*'     => ['nullable', 'array'],
+            'education_history.*'  => ['nullable', 'array'],
+            'employment_history.*' => ['nullable', 'array'],
+            'training_history.*'   => ['nullable', 'array'],
+            'achievements.*'       => ['nullable', 'array'],
+            'attachments.*'        => ['nullable', 'array'],
         ]);
 
         // ---------------------- 2. TRANSACTION ----------------------
@@ -626,23 +617,28 @@ class HREmployeeController extends Controller
 
             // ----- PROFILE IMAGE -----
             if ($request->hasFile('image')) {
+                // Delete old image if exists
                 if ($employee->image && Storage::disk('public')->exists($employee->image)) {
                     Storage::disk('public')->delete($employee->image);
                 }
+
+                // Store new image
                 $employee->image = $request->file('image')->store('employees/profiles', 'public');
-                $employee->save();
+                $employee->save(); // Save image path immediately
             }
 
-            // ----- MAIN EMPLOYEE -----
+            // ----- MAIN EMPLOYEE RECORD -----
             $employee->update([
                 'employee_code' => $request->employee_code,
                 'department_id' => $request->department_id,
-                'status'        => $request->status,
                 'branch_id'     => $request->branch_id,
                 'position_id'   => $request->position_id,
+                'status'        => $request->status,
+                // Convert empty supervisor_id to null (prevents accidental reset)
+                'supervisor_id' => $request->filled('supervisor_id') ? $request->supervisor_id : null,
             ]);
 
-            // ----- PERSONAL INFO -----
+            // ----- PERSONAL INFORMATION -----
             $employee->personalInfo()->updateOrCreate(
                 ['employee_id' => $employee->id],
                 $request->only([
@@ -665,7 +661,7 @@ class HREmployeeController extends Controller
                 ])
             );
 
-            // ----- CONTACT -----
+            // ----- CONTACT INFORMATION -----
             $employee->contact()->updateOrCreate(
                 ['employee_id' => $employee->id],
                 $request->only(['phone_number', 'home_phone', 'office_phone', 'email'])
@@ -678,16 +674,17 @@ class HREmployeeController extends Controller
             );
 
             // ----- IDENTIFICATION -----
-            if ($request->filled('identification_type') || $request->filled('identification_number')) {
+            if ($request->filled(['identification_type', 'identification_number', 'expiration_date'])) {
                 $employee->identification()->updateOrCreate(
                     ['employee_id' => $employee->id],
                     $request->only(['identification_type', 'identification_number', 'expiration_date'])
                 );
             } else {
+                // Delete if all fields are empty
                 $employee->identification()?->delete();
             }
 
-            // ----- Dynamic Sections -----
+            // ----- DYNAMIC SECTIONS (Sync related records) -----
             $this->syncEmergencyContacts($request, $employee);
             $this->syncFamilyMembers($request, $employee);
             $this->syncEducationHistory($request, $employee);
@@ -697,10 +694,10 @@ class HREmployeeController extends Controller
             $this->syncAttachments($request, $employee);
         });
 
-        // ---------------------- 3. REDIRECT ----------------------
+        // ---------------------- 3. SUCCESS REDIRECT ----------------------
         return redirect()
             ->route('hr.employees.index')
-            ->with('success', 'បុគ្គលិកត្រូវបានកែប្រែដោយជោគជ័យ!');
+            ->with('success', 'Employee updated successfully!');
     }
 
     // Sync Emergency Contacts
@@ -967,6 +964,6 @@ class HREmployeeController extends Controller
             $employee->save();
         });
 
-        return back()->with('success', 'បុគ្គលិកត្រូវបានផ្លាស់ប្តូរទៅស្ថានភាពអសកម្មដោយជោគជ័យ!');
+        return back()->with('success', 'Employee status successfully updated to Inactive.');
     }
 }

@@ -33,37 +33,7 @@ class EmployeeSeeder extends Seeder
                 'status'        => 'active',
                 'created_at'   => now(),
                 'updated_at'   => now(),
-            ],  
-            [
-                'department_id' => 6,
-                'branch_id'     => 1,
-                'position_id'   => 7,
-                'employee_code' => 'EMP003',
-                'image'        => null,
-                'status'        => 'active',
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ],  
-            [
-                'department_id' => 4,
-                'branch_id'     => 2,
-                'position_id'   => 7,
-                'employee_code' => 'EMP004',
-                'image'        => null,
-                'status'        => 'active',
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ],  
-            [
-                'department_id' => 5,
-                'branch_id'     => 2,
-                'position_id'   => 9,
-                'employee_code' => 'EMP005',
-                'image'        => null,
-                'status'        => 'active',
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ],  
+            ],   
         ];
         Employee::insert($employees);
     }

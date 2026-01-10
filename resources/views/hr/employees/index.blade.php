@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="{{ asset('assets/toast/css.css') }}" rel="stylesheet">
     <style>
         .table-container {
             max-height: 500px;
@@ -50,7 +51,7 @@
 </head>
 
 <body class="bg-gray-50 font-sans antialiased">
-
+    @include('toastify.toast')
     <div x-data="{ sidebarOpen: false }" class="flex h-screen">
         {{-- Sidebar --}}
         @include('layout.hrSidebar')
@@ -235,6 +236,9 @@
                                             class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Branch
                                         </th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Supervisor
+                                        </th>
                                         <th
                                             class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
@@ -284,6 +288,15 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900">
                                                     {{ $employee->branch?->branch_name ?? '-' }}
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm text-gray-900">
+                                                    @if($employee->supervisor)
+                                                       {{ $employee->supervisor->personalInfo?->full_name_en ?? 'N/A' }}
+                                                    @else
+                                                        <span class="text-gray-400">No Supervisor</span>
+                                                    @endif
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
@@ -390,7 +403,7 @@
             </main>
         </div>
     </div>
-
+    <script src="{{ asset('assets/toast/script.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Notification dropdown toggle

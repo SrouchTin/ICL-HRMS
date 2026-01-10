@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
+    <link href="{{ asset('assets/toast/css.css') }}" rel="stylesheet">
     <style>
         [x-cloak] {
             display: none !important;
@@ -34,7 +34,7 @@
         @include('layout.employeeSidebar')
 
         <div class="flex-1 flex flex-col overflow-hidden">
-
+            @include('toastify.toast')
             <!-- Header -->
             <header class="bg-white/80 backdrop-blur-lg border-b border-slate-200">
                 <div class="px-8 py-6">
@@ -114,6 +114,9 @@
                                             class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                             Reason</th>
                                         <th
+                                            class="px-6 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                            Half Day</th>
+                                        <th
                                             class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                             Approved By</th>
                                         <th
@@ -147,7 +150,7 @@
                                             <!-- Leave Type -->
                                             <td class="px-6 py-4">
                                                 <span
-                                                    class="font-semibold text-slate-900">{{ $leave->leaveType?->name ?? '—' }}</span>
+                                                    class="font-semibold text-slate-900">{{ $leave->leaveType?->name ?? 'null' }}</span>
                                             </td>
 
                                             <!-- From Date -->
@@ -167,24 +170,39 @@
 
                                             <!-- Reason -->
                                             <td class="px-6 py-4 text-slate-700 no-wrap" title="{{ $leave->reason }}">
-                                                {{ $leave->reason ?: '—' }}
+                                                {{ $leave->reason ?: 'null' }}
                                             </td>
 
-                                            <!-- Approved By - Full Name + Role Label -->
+                                            {{-- Hald day --}}
+                                            <td class="px-6 py-4 text-center">
+                                                @if($leave->leave_for === 'half_day')
+                                                    <span
+                                                        class="inline-flex px-3 py-1 rounded-full text-xs font-semibold
+                                                                                        @if($leave->half_day_type === 'morning') bg-blue-100 text-blue-800
+                                                                                        @elseif($leave->half_day_type === 'afternoon') bg-purple-100 text-purple-800
+                                                                                        @elseif($leave->half_day_type === 'other') bg-orange-100 text-orange-800
+                                                                                        @else bg-gray-100 text-gray-800 @endif">
+                                                        {{ ucfirst($leave->half_day_type ?? 'null') }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-slate-400">null</span>
+                                                @endif
+                                            </td>
+                                            <!-- Approved By Column (similar structure) -->
                                             <td class="px-6 py-4">
-                                                @if($leave->status === 'Approved' && $leave->approver)
-                                                    <div>
-                                                        <div class="font-medium text-slate-900">
-                                                            {{ $leave->approver->personalInfo?->full_name_en ?? $leave->approver->username ?? 'Unknown' }}
-                                                        </div>
-                                                        <div class="text-xs text-green-600">
-                                                            @if(str_contains(strtolower($leave->approver->role ?? ''), 'hr'))
-                                                                HR Approver
-                                                            @else
-                                                                Admin Approver
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                                @if($leave->status === 'Approved')
+                                                                                    <div>
+                                                                                        <div class="font-medium text-slate-900">
+                                                                                            {{ $leave->approvedByEmployee?->personalInfo?->full_name_en
+                                                                                                ?? $leave->approvedByEmployee?->personalInfo?->full_name_kh
+                                                                                                ?? 'Unknown' }}
+                                                                                        </div>
+                                                                                        {{-- <div class="text-xs text-green-600">
+                                                                                            @if($leave->approved_by == $leave->approver_id)
+                                                                                                Approved
+                                                                                            @endif
+                                                                                        </div> --}}
+                                                                                    </div>
                                                 @else
                                                     <span class="text-slate-400">null</span>
                                                 @endif
@@ -199,21 +217,26 @@
                                                 @endif
                                             </td>
 
-                                            <!-- Rejected By - Full Name + Role Label -->
+                                            <!-- Rejected By -->
+                                            <!-- Rejected By Column -->
                                             <td class="px-6 py-4">
-                                                @if($leave->status === 'Rejected' && $leave->rejecter)
-                                                    <div>
-                                                        <div class="font-medium text-slate-900">
-                                                            {{ $leave->rejecter->personalInfo?->full_name_en ?? $leave->rejecter->username ?? 'Unknown' }}
-                                                        </div>
-                                                        <div class="text-xs text-red-600">
-                                                            @if(str_contains(strtolower($leave->rejecter->role ?? ''), 'hr'))
-                                                                HR Rejecter
-                                                            @else
-                                                                Admin Rejecter
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                                @if($leave->status === 'Rejected')
+                                                                                    <div>
+                                                                                        <div class="font-medium text-slate-900">
+                                                                                            {{ $leave->rejectedByEmployee?->personalInfo?->full_name_en
+                                                    ?? $leave->rejectedByEmployee?->personalInfo?->full_name_kh
+                                                    ?? 'Unknown' }}
+                                                                                        </div>
+                                                                                        {{-- <div class="text-xs text-red-600">
+                                                                                            @if($leave->rejected_by == $leave->person_incharge_id)
+                                                                                                Supervisor Rejecter
+                                                                                            @elseif($leave->rejected_by == $leave->approver_id)
+                                                                                                {{ $leave->approver_id ? 'HR Rejecter' : 'Approver' }}
+                                                                                            @else
+                                                                                                Rejecter
+                                                                                            @endif
+                                                                                        </div> --}}
+                                                                                    </div>
                                                 @else
                                                     <span class="text-slate-400">null</span>
                                                 @endif
@@ -312,5 +335,5 @@
     </div>
 
 </body>
-
+<script src="{{ asset('assets/toast/script.js') }}"></script>
 </html>

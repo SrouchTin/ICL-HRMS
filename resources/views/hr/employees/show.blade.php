@@ -28,8 +28,8 @@
             <header class="bg-white shadow-sm border-b border-gray-200 px-8 py-5 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-gray-800">Employee Profile</h1>
                 <a href="{{ route('hr.employees.index') }}"
-                    class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center">
-                    <i class="fas fa-arrow-left mr-2"></i> Back to List
+                    class="bg-indigo-600 hover:bg-indigo-600 text-white rounded-md py-2 px-3 font-medium flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Back
                 </a>
             </header>
 

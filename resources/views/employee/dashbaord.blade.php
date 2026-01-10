@@ -17,11 +17,13 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
-<div x-data="{ sidebarOpen: false }" class="flex h-screen">
+<div x-data="{ sidebarOpen: false, notificationOpen: false }" 
+     class="flex h-screen"
+     @click="notificationOpen = false">
 
     {{-- Sidebar --}}
-        @include('layout.employeeSidebar')
-    {{-- Sidebar --}}
+    @include('layout.employeeSidebar')
+
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
         <!-- Top Bar -->
@@ -31,45 +33,51 @@
                     <h1 class="text-2xl font-semibold text-gray-800">
                         Welcome back, <span class="text-indigo-600">{{ Auth::user()->name ?? 'Employee' }}</span>!
                     </h1>
-                    <p class="text-gray-600 text-sm">
-                        Have a productive day!
-                    </p>
+                    <p class="text-gray-600 text-sm">Have a productive day!</p>
                 </div>
 
                 <!-- Notification Bell -->
                 <div class="relative">
-                    <button id="notificationBtn" class="relative p-3 text-gray-600 hover:text-indigo-600 transition hover:bg-gray-100 rounded-full">
+                    <button @click.stop="notificationOpen = !notificationOpen"
+                            class="relative p-3 text-gray-600 hover:text-indigo-600 transition hover:bg-gray-100 rounded-full">
                         <i class="fas fa-bell text-xl"></i>
-                        <span class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">5</span>
+                        @if($unreadNotificationsCount > 0)
+                            <span class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                {{ $unreadNotificationsCount }}
+                            </span>
+                        @endif
                     </button>
 
                     <!-- Notification Dropdown -->
-                    <div id="notificationDropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50">
+                    <div x-show="notificationOpen"
+                         x-transition
+                         @click.away="notificationOpen = false"
+                         x-cloak
+                         class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                         <div class="px-4 py-3 border-b border-gray-200 font-semibold text-gray-700">
-                            Notifications <span class="text-red-500">(5 new)</span>
+                            Notifications 
+                            @if($unreadNotificationsCount > 0)
+                                <span class="text-red-500">({{ $unreadNotificationsCount }} new)</span>
+                            @endif
                         </div>
-                        <ul class="max-h-96 overflow-y-auto">
-                            <li class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                                <div class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                                    <div class="ml-3">
-                                        <p class="text-sm font-medium">Check-in Successful</p>
-                                        <p class="text-xs text-gray-500">You checked in at 08:45 AM</p>
-                                        <p class="text-xs text-gray-400 mt-1">Today</p>
+
+                        <div class="max-h-96 overflow-y-auto">
+                            @forelse($recentNotifications as $notification)
+                                <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas {{ $notification['icon'] ?? 'fa-info-circle' }} text-indigo-500 mt-1"></i>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900">{{ $notification['title'] }}</p>
+                                            <p class="text-xs text-gray-600 mt-1">{{ $notification['message'] }}</p>
+                                            <p class="text-xs text-gray-400 mt-1">{{ $notification['time'] }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </li>
-                            <li class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                                <div class="flex items-start">
-                                    <i class="fas fa-calendar-check text-yellow-500 mt-1"></i>
-                                    <div class="ml-3">
-                                        <p class="text-sm font-medium">Leave Request Pending</p>
-                                        <p class="text-xs text-gray-500">Your annual leave is under review</p>
-                                        <p class="text-xs text-gray-400 mt-1">2 days ago</p>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
+                            @empty
+                                <p class="text-center text-gray-500 py-8 text-sm">No new notifications</p>
+                            @endforelse
+                        </div>
+
                         <a href="#" class="block text-center py-3 text-indigo-600 hover:bg-gray-50 text-sm font-medium">
                             View all notifications
                         </a>
@@ -126,7 +134,7 @@
             <!-- Quick Actions -->
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="#" class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+                <a href="{{ route('employee.attendance.index') }}" class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
                     <i class="fas fa-clock text-3xl mb-3"></i>
                     <p class="font-medium">Check In / Out</p>
                 </a>

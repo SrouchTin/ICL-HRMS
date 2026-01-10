@@ -18,15 +18,20 @@ class AdminLeaveController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Leave::with(['employee.personalInfo', 'leaveType'])
+        $query = Leave::with([
+                'employee.personalInfo',
+                'leaveType',
+                'personInCharge.personalInfo'  // ← Critical: Load Person In Charge for display
+            ])
             ->where('status', 'Pending')
             ->latest('created_at');
 
-        // Search by employee code or full name (EN/KH)
+        // Search by employee code, username, or full name (EN/KH)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('employee', function ($q) use ($search) {
                 $q->where('employee_code', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
                   ->orWhereHas('personalInfo', function ($q) use ($search) {
                       $q->where('full_name_en', 'like', "%{$search}%")
                         ->orWhere('full_name_kh', 'like', "%{$search}%");
@@ -39,27 +44,28 @@ class AdminLeaveController extends Controller
             $query->where('leave_type_id', $request->leave_type);
         }
 
-        // Preserve query string when paginating (search + filter)
         $leaves = $query->paginate(15)->withQueryString();
 
         $leaveTypes = LeaveType::where('status', 'active')->get();
 
         $pendingCount = Leave::where('status', 'Pending')->count();
 
-        // Approved this month
         $approvedThisMonth = Leave::where('status', 'Approved')
             ->whereMonth('approved_at', now()->month)
             ->whereYear('approved_at', now()->year)
             ->count();
 
-        // Rejected this month - ប្រើ rejected_at មិនមែន approved_at!
         $rejectedThisMonth = Leave::where('status', 'Rejected')
             ->whereMonth('rejected_at', now()->month)
             ->whereYear('rejected_at', now()->year)
             ->count();
 
         // Recent pending leaves for notification bell
-        $recentLeaves = Leave::with(['employee.personalInfo', 'leaveType'])
+        $recentLeaves = Leave::with([
+                'employee.personalInfo',
+                'leaveType',
+                'personInCharge.personalInfo'
+            ])
             ->where('status', 'Pending')
             ->latest()
             ->take(8)
@@ -91,20 +97,20 @@ class AdminLeaveController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Deduct balance based on leave year (more accurate)
-            $year = Carbon::parse($leave->from_date)->year;
+            // Use the year of the leave period (more accurate than current year)
+            $leaveYear = Carbon::parse($leave->from_date)->year;
 
             $updated = DB::table('leave_balances')
                 ->where('employee_id', $leave->employee_id)
                 ->where('leave_type_id', $leave->leave_type_id)
-                ->where('year', $year)
+                ->where('year', $leaveYear)
                 ->increment('used_days', $leave->leave_days);
 
             if ($updated > 0) {
                 DB::table('leave_balances')
                     ->where('employee_id', $leave->employee_id)
                     ->where('leave_type_id', $leave->leave_type_id)
-                    ->where('year', $year)
+                    ->where('year', $leaveYear)
                     ->update(['remaining_days' => DB::raw('total_days - used_days')]);
             }
         });
@@ -126,7 +132,7 @@ class AdminLeaveController extends Controller
         ]);
 
         $leave->update([
-            'status'        => 'Rejected',        
+            'status'        => 'Rejected',
             'reject_reason' => $request->reject_reason,
             'rejected_by'   => Auth::id(),
             'rejected_at'   => now(),

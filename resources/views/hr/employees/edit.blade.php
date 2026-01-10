@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="{{ asset('assets/toast/css.css') }}" rel="stylesheet">
     <style>
         .form-section.collapsed {
             max-height: none !important;
@@ -81,7 +82,7 @@
 <body class="bg-gray-100 font-sans antialiased">
     <div x-data="{ sidebarOpen: false }" class="flex h-screen">
         @include('layout.hrSidebar')
-
+        @include('toastify.toast')
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-sm">
                 <div class="flex justify-between items-center px-6 py-4">
@@ -175,7 +176,29 @@
                                         <option value="inactive" {{ old('status', $employee->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
                                     </select>
                                 </div>
-
+                                <!-- SUPERVISOR - FULLY FIXED -->
+                                <div>
+                                    <label class="block mb-2 font-medium text-gray-700">Supervisor</label>
+                                    <select name="supervisor_id" class="w-full border border-gray-300 rounded-lg px-4 py-3">
+                                        <option value="">-- No Supervisor --</option>
+                                        @foreach(\App\Models\Employee::where('status', 'active')
+                                            ->where('id', '!=', $employee->id)
+                                            ->with('personalInfo')
+                                            ->orderBy('employee_code')
+                                            ->get() as $emp)
+                                            <option value="{{ $emp->id }}"
+                                                {{ old('supervisor_id', $employee->supervisor_id) == $emp->id ? 'selected' : '' }}>
+                                                {{ $emp->employee_code }} - {{ $emp->personalInfo?->full_name_en ?? 'No Name' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @if($employee->supervisor)
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            Current Supervisor: 
+                                            <strong>{{ $employee->supervisor->employee_code }} - {{ $employee->supervisor->personalInfo?->full_name_en ?? 'N/A' }}</strong>
+                                        </p>
+                                    @endif
+                                </div>
                                 <div>
                                     <label class="block mb-2 font-medium text-gray-700">Profile Image</label>
                                     @if($employee->image)
@@ -780,7 +803,7 @@
             </main>
         </div>
     </div>
-
+    <script src="{{ asset('assets/toast/script.js') }}"></script>
     {{-- Block Code Js --}}
     <script>
 

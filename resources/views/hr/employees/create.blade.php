@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="{{ asset('assets/toast/css.css') }}" rel="stylesheet">
     <style>
         .form-section {
             transition: all 0.4s ease;
@@ -67,7 +68,7 @@
 </head>
 
 <body class="bg-gray-100 font-sans antialiased">
-
+    @include('toastify.toast')
     <div x-data="{ sidebarOpen: false }" class="flex h-screen">
         {{-- Sidebar --}}
         @include('layout.hrSidebar')
@@ -134,6 +135,21 @@
                                         @endforeach
                                     </select>
                                     @error('branch_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                                </div>
+                                <!-- NEW: Supervisor Field -->
+                                <div>
+                                    <label class="block mb-2 font-medium text-gray-700">Supervisor</label>
+                                    <select name="supervisor_id" class="w-full border rounded-lg px-4 py-3">
+                                        <option value="">-- No Supervisor --</option>
+                                        @foreach(\App\Models\Employee::where('status', 'active')
+                                            ->with('personalInfo')
+                                            ->get() as $emp)
+                                            <option value="{{ $emp->id }}" {{ old('supervisor_id') == $emp->id ? 'selected' : '' }}>
+                                                {{ $emp->employee_code }} - {{ $emp->personalInfo->full_name_en ?? 'No Name' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('supervisor_id') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                                 </div>
                                 <div><label class="block mb-2 font-medium text-gray-700 required">Position</label>
                                     <select name="position_id" class="w-full border rounded-lg px-4 py-3" required>
@@ -273,9 +289,26 @@
                                         value="{{ old('country', 'Cambodia') }}"
                                         class="w-full border rounded-lg px-4 py-3"></div>
                                         
-                                <div class="md:col-span-2"><label class="required">Full Address</label><textarea name="address" rows="3"
-                                        class="w-full border rounded-lg px-4 py-3" required>{{ old('address') }}</textarea></div>
-                                        @error('address') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                                <div class="md:col-span-2">
+                                    <label for="address" class="block font-medium text-gray-700 mb-2">
+                                        Full Address <span class="text-red-600">*</span>
+                                    </label>
+                                    <textarea 
+                                        id="address"
+                                        name="address" 
+                                        rows="3"
+                                        title="Full Address"
+                                        required
+                                        oninvalid="this.setCustomValidity('Please Input FullAddress')"
+                                        oninput="this.setCustomValidity('')"
+                                        placeholder="ភូមិ ឃុំ ស្រុក ខេត្ត..."
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                                    >{{ old('address') }}</textarea>
+
+                                    @error('address')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
@@ -461,7 +494,7 @@
             </main>
         </div>
     </div>
-
+<script src="{{ asset('assets/toast/script.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Collapsible sections
@@ -501,29 +534,32 @@
 
         // ==================== RESTORE ALL OLD DATA - NO RESET! ====================
 
-        // 1. Emergency Contacts
+        // 1. Emergency Contact
         @if(old('emergency_contacts'))
             @foreach(old('emergency_contacts') as $i => $item)
-                addBlock('emergency-contact-container', `
-                    <div class="dynamic-block">
-                        <div class="remove-item">×</div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block mb-1 text-sm font-medium text-gray-700">Contact Person</label>
-                                <input type="text" name="emergency_contacts[{{ $i }}][contact_person]" value="{{ old('emergency_contacts.'.$i.'.contact_person') }}" class="w-full border rounded-lg px-4 py-3" required>
-                            </div>
-                            <div>
-                                <label class="block mb-1 text-sm-medium text-gray-700">Relationship</label>
-                                <input type="text" name="emergency_contacts[{{ $i }}][relationship]" value="{{ old('emergency_contacts.'.$i.'.relationship') }}" class="w-full border rounded-lg px-4 py-3">
-                            </div>
-                            <div>
-                                <label class="block mb-1 text-sm-medium text-gray-700">Phone</label>
-                                <input type="tel" name="emergency_contacts[{{ $i }}][phone_number]" value="{{ old('emergency_contacts.'.$i.'.phone_number') }}" class="w-full border rounded-lg px-4 py-3">
+                (() => {
+                    const i = {{ $i }};
+                    addBlock('emergency-contact-container', `
+                        <div class="dynamic-block">
+                            <div class="remove-item">×</div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700">Contact Person</label>
+                                    <input type="text" name="emergency_contacts[${i}][contact_person]" value="{{ $item['contact_person'] ?? '' }}" class="w-full border rounded-lg px-4 py-3" required>
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700">Relationship</label>
+                                    <input type="text" name="emergency_contacts[${i}][relationship]" value="{{ $item['relationship'] ?? '' }}" class="w-full border rounded-lg px-4 py-3">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700">Phone</label>
+                                    <input type="tel" name="emergency_contacts[${i}][phone_number]" value="{{ $item['phone_number'] ?? '' }}" class="w-full border rounded-lg px-4 py-3">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `);
-                counters.emergency = Math.max(counters.emergency, {{ $i + 1 }});
+                    `);
+                    counters.emergency = Math.max(counters.emergency, i + 1);
+                })();
             @endforeach
         @endif
 
@@ -611,14 +647,14 @@
                         <div class="remove-item">×</div>
                         <h3 class="font-semibold text-indigo-700 mb-4">Employment #{{ $i + 1 }}</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label>Company Name</label><input type="text" name="employment_history[{{ $i }}][company_name]" value="{{ old('employment_history.'.$i.'.company_name') }}" class="w-full border rounded px-3 py-2" required></div>
-                            <div><label>Designation</label><input type="text" name="employment_history[{{ $i }}][designation]" value="{{ old('employment_history.'.$i.'.designation') }}" class="w-full border rounded px-3 py-2"></div>
-                            <div><label>Start Date</label><input type="date" name="employment_history[{{ $i }}][start_date]" value="{{ old('employment_history.'.$i.'.start_date') }}" class="w-full border rounded px-3 py-2"></div>
-                            <div><label>End Date</label><input type="date" name="employment_history[{{ $i }}][end_date]" value="{{ old('employment_history.'.$i.'.end_date') }}" class="w-full border rounded px-3 py-2"></div>
-                            <div><label>Supervisor Name</label><input type="text" name="text" name="employment_history[{{ $i }}][supervisor_name]" value="{{ old('employment_history.'.$i.'.supervisor_name') }}" class="w-full border rounded px-3 py-2"></div>
-                            <div><label>Rate / Salary</label><input type="text" name="employment_history[{{ $i }}][rate]" value="{{ old('employment_history.'.$i.'.rate') }}" placeholder="e.g. $800" class="w-full border rounded px-3 py-2"></div>
-                            <div class="md:col-span-2"><label>Remark</label><textarea name="employment_history[{{ $i }}][remark]" rows="2" class="w-full border rounded px-3 py-2">{{ old('employment_history.'.$i.'.remark') }}</textarea></div>
-                            <div class="md:col-span-2"><label>Reason for Leaving</label><textarea name="employment_history[{{ $i }}][reason_for_leaving]" rows="3" class="w-full border rounded px-3 py-2">{{ old('employment_history.'.$i.'.reason_for_leaving') }}</textarea></div>
+                            <div><label>Company Name</label><input type="text" name="employment_history[{{ $i }}][company_name]" value="{{ $item['company_name'] ?? '' }}" class="w-full border rounded px-3 py-2" required></div>
+                            <div><label>Designation</label><input type="text" name="employment_history[{{ $i }}][designation]" value="{{ $item['designation'] ?? '' }}" class="w-full border rounded px-3 py-2"></div>
+                            <div><label>Start Date</label><input type="date" name="employment_history[{{ $i }}][start_date]" value="{{ $item['start_date'] ?? '' }}" class="w-full border rounded px-3 py-2"></div>
+                            <div><label>End Date</label><input type="date" name="employment_history[{{ $i }}][end_date]" value="{{ $item['end_date'] ?? '' }}" class="w-full border rounded px-3 py-2"></div>
+                            <div><label>Supervisor Name</label><input type="text" name="employment_history[{{ $i }}][supervisor_name]" value="{{ $item['supervisor_name'] ?? '' }}" class="w-full border rounded px-3 py-2"></div>
+                            <div><label>Rate / Salary</label><input type="text" name="employment_history[{{ $i }}][rate]" value="{{ $item['rate'] ?? '' }}" placeholder="e.g. $800" class="w-full border rounded px-3 py-2"></div>
+                            <div class="md:col-span-2"><label>Remark</label><textarea name="employment_history[{{ $i }}][remark]" rows="2" class="w-full border rounded px-3 py-2">{{ $item['remark'] ?? '' }}</textarea></div>
+                            <div class="md:col-span-2"><label>Reason for Leaving</label><textarea name="employment_history[{{ $i }}][reason_for_leaving]" rows="3" class="w-full border rounded px-3 py-2">{{ $item['reason_for_leaving'] ?? '' }}</textarea></div>
                         </div>
                     </div>
                 `);

@@ -4,73 +4,97 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SeedLeaveBalances2025 extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'leave:seed-balances-2025';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Seed leave balances for all employees in year 2025 based on leave_types.max_days';
+    protected $description = 'Seed or update leave balances for ALL employees in year 2025 based on leave_types.max_days';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         $year = 2025;
 
-        $this->info("Seeding leave balances for year {$year}...");
+        $this->info("🌱 Starting to seed/update leave balances for year {$year}...");
 
+        // Get all leave types that have max_days defined
         $leaveTypes = DB::table('leave_types')
             ->whereNotNull('max_days')
-            ->get(['id', 'max_days']);
+            ->where('max_days', '>', 0)
+            ->get(['id', 'name', 'max_days']);
 
         if ($leaveTypes->isEmpty()) {
-            $this->error('No leave types with max_days found!');
-            return;
+            $this->error('❌ No leave types with max_days found!');
+            return 1;
         }
 
-        $employees = DB::table('employees')->pluck('id');
+        $this->info("Found {$leaveTypes->count()} leave types with entitlements.");
+
+        // Get ALL employees (active or inactive – you can filter if needed)
+        $employees = DB::table('employees')
+            ->select('id')
+            ->get();
 
         if ($employees->isEmpty()) {
-            $this->error('No employees found!');
-            return;
+            $this->error('❌ No employees found in the database!');
+            return 1;
         }
 
-        $totalInserted = 0;
+        $this->info("Found {$employees->count()} employees. Processing...");
 
-        foreach ($employees as $employeeId) {
+        $bar = $this->output->createProgressBar($employees->count() * $leaveTypes->count());
+        $bar->start();
+
+        $inserted = 0;
+        $updated = 0;
+
+        foreach ($employees as $employee) {
             foreach ($leaveTypes as $type) {
                 $affected = DB::table('leave_balances')->updateOrInsert(
                     [
-                        'employee_id'   => $employeeId,
+                        'employee_id'   => $employee->id,
                         'leave_type_id' => $type->id,
                         'year'          => $year,
                     ],
                     [
                         'total_days'     => $type->max_days,
-                        'used_days'      => 0,
-                        'remaining_days' => $type->max_days,
-                        'created_at'     => now(),
+                        'used_days'      => DB::raw('used_days'), // Keep existing used_days
+                        'remaining_days' => DB::raw('total_days - used_days'), // Recalculate
                         'updated_at'     => now(),
+                        'created_at'     => now(), // Only used on insert
                     ]
                 );
 
                 if ($affected) {
-                    $totalInserted++;
+                    // To distinguish insert vs update, check if record existed before
+                    $exists = DB::table('leave_balances')
+                        ->where('employee_id', $employee->id)
+                        ->where('leave_type_id', $type->id)
+                        ->where('year', $year)
+                        ->where('created_at', '<', Carbon::now()->subMinute()) // rough check
+                        ->exists();
+
+                    if ($exists) {
+                        $updated++;
+                    } else {
+                        $inserted++;
+                    }
                 }
+
+                $bar->advance();
             }
         }
 
-        $this->info("Successfully seeded {$totalInserted} leave balance records for year 2025!");
+        $bar->finish();
+        $this->newLine(2);
+
+        $this->info("✅ Completed!");
+        $this->info("   • New records inserted: {$inserted}");
+        $this->info("   • Existing records updated: {$updated}");
+        $this->info("   • Total employees processed: {$employees->count()}");
+        $this->info("   • Total leave types: {$leaveTypes->count()}");
+
+        return 0;
     }
 }

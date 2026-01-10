@@ -28,4 +28,15 @@ class Department extends Model
     {
         return $this->hasMany(Employee::class);
     }
+    // This lets you use $department->name everywhere in code/views
+    public function getNameAttribute()
+    {
+        return $this->department_name;
+    }
+
+    // Optional: allow setting via $department->name = '...'
+    public function setNameAttribute($value)
+    {
+        $this->attributes['department_name'] = $value;
+    }
 }

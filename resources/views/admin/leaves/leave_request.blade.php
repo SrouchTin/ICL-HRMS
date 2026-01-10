@@ -7,7 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <style>[x-cloak]{display:none!important}</style>
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Smooth scrollbar */
+        .table-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .table-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Truncate text */
+        .truncate-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 <div x-data="{ sidebarOpen: false, notificationOpen: false }" class="flex h-screen overflow-hidden">
@@ -44,8 +69,8 @@
                                 <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
                                     <div class="flex items-start gap-3">
                                         <i class="fas fa-calendar-plus text-indigo-500 mt-1"></i>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">
                                                 {{ $leave->employee->personalInfo?->full_name_en ?? $leave->employee->username }}
                                             </p>
                                             <p class="text-xs text-gray-600">
@@ -131,8 +156,9 @@
                     </form>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full">
+                <!-- Table with horizontal scroll -->
+                <div class="overflow-x-auto table-scroll">
+                    <table class="w-full min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
@@ -140,81 +166,113 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Person In Charge</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($leaves as $leave)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="bg-gray-200 border-2 border-dashed rounded-full w-12 h-12 flex-shrink-0 overflow-hidden">
-                                                <img src="{{ $leave->employee->image ? asset('storage/' . $leave->employee->image) : asset('images/default-avatar.png') }}" 
-                                                    alt="Employee Avatar" 
-                                                    class="w-full h-full object-cover">
+                                <tr class="hover:bg-gray-50 transition">
+                                    <!-- Employee -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex-shrink-0">
+                                                <img src="{{ $leave->employee->image ? asset('storage/' . $leave->employee->image) : asset('images/default-avatar.png') }}"
+                                                     alt="Avatar"
+                                                     class="w-12 h-12 rounded-full object-cover border border-gray-300">
                                             </div>
-                                            <div class="ml-4">
+                                            <div>
                                                 <div class="text-sm font-medium text-gray-900">
                                                     {{ $leave->employee->personalInfo?->full_name_en ?? $leave->employee->username }}
                                                 </div>
-                                                <div class="text-sm text-gray-500">{{ $leave->employee->employee_code ?? 'N/A' }}</div>
+                                                <div class="text-xs text-gray-500">
+                                                    {{ $leave->employee->employee_code ?? 'N/A' }}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
+
+                                    <!-- Leave Type -->
                                     <td class="px-6 py-4">
-                                        <span class="px-3 py-1 text-xs font-medium rounded-full
+                                        <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full
                                             @switch($leave->leave_type_id)
-                                                @case(1) bg-red-100 text-red-800 @break    <!-- Sick -->
-                                                @case(2) bg-blue-100 text-blue-800 @break   <!-- Annual -->
-                                                @case(3) bg-purple-100 text-purple-800 @break <!-- Special -->
-                                                @case(4) bg-orange-100 text-orange-800 @break <!-- Unpaid -->
-                                                @case(5) bg-teal-100 text-teal-800 @break    <!-- Compensate -->
-                                                @case(6) bg-pink-100 text-pink-800 @break    <!-- Maternity -->
+                                                @case(1) bg-red-100 text-red-800
+                                                @case(2) bg-blue-100 text-blue-800
+                                                @case(3) bg-purple-100 text-purple-800
+                                                @case(4) bg-orange-100 text-orange-800
+                                                @case(5) bg-teal-100 text-teal-800
+                                                @case(6) bg-pink-100 text-pink-800
                                                 @default bg-gray-100 text-gray-800
                                             @endswitch">
                                             {{ $leave->leaveType?->name ?? 'Unknown' }}
                                         </span>
                                     </td>
-                                    <!-- From Date - Separate Column -->
+
+                                    <!-- From Date -->
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         {{ \Carbon\Carbon::parse($leave->from_date)->format('d-m-Y') }}
                                         @if($leave->leave_days == 0.5 && $leave->from_date === $leave->to_date)
-                                            <span class="text-orange-600 font-medium">(Half Day)</span>
+                                            <span class="ml-2 text-xs font-medium text-orange-600">(Half Day)</span>
                                         @endif
                                     </td>
-                                    <!-- To Date - Separate Column -->
+
+                                    <!-- To Date -->
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         {{ \Carbon\Carbon::parse($leave->to_date)->format('d-m-Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">
+
+                                    <!-- Days -->
+                                    <td class="px-6 py-4 text-center text-sm font-semibold text-gray-900">
                                         {{ number_format($leave->leave_days, 1) }} day{{ $leave->leave_days != 1 ? 's' : '' }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="{{ $leave->reason }}">
-                                        {{ $leave->reason ?: '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm space-x-6">
-                                        <!-- Approve Form -->
-                                        <form action="{{ route('hr.leave.approve', $leave->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                    onclick="return confirm('Approve this leave request?')"
-                                                    class="text-green-600 hover:text-green-800 font-medium transition">
-                                                Approve
-                                            </button>
-                                        </form>
 
-                                        <!-- Reject Button -->
-                                        <button onclick="openRejectModal({{ $leave->id }})"
-                                                class="text-red-600 hover:text-red-800 font-medium transition">
-                                            Reject
-                                        </button>
+                                    <!-- Person In Charge -->
+                                    <td class="px-6 py-4">
+                                        @if($leave->personInCharge)
+                                            <div class="text-sm">
+                                                <div class="font-medium text-gray-900 truncate-text" title="{{ $leave->personInCharge->personalInfo?->full_name_en ?? $leave->personInCharge->username }}">
+                                                    {{ $leave->personInCharge->personalInfo?->full_name_en ?? $leave->personInCharge->username }}
+                                                </div>
+                                                <div class="text-xs text-gray-500">
+                                                    {{ $leave->personInCharge->employee_code ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
+
+                                    <!-- Reason -->
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-600 max-w-xs truncate-text" title="{{ $leave->reason }}">
+                                            {{ $leave->reason ?: '—' }}
+                                        </div>
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex items-center justify-center gap-6">
+                                            <form action="{{ route('hr.leave.approve', $leave->id) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                        onclick="return confirm('Approve this leave request?')"
+                                                        class="text-green-600 hover:text-green-800 font-medium text-sm transition">
+                                                    Approve
+                                                </button>
+                                            </form>
+
+                                            <button onclick="openRejectModal({{ $leave->id }})"
+                                                    class="text-red-600 hover:text-red-800 font-medium text-sm transition">
+                                                Reject
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-12 text-gray-500 text-lg">
+                                    <td colspan="8" class="px-6 py-12 text-center text-gray-500 text-lg">
                                         No pending leave requests found.
                                     </td>
                                 </tr>
@@ -224,7 +282,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="px-6 py-4 border-t border-gray-200">
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                     {{ $leaves->appends(request()->query())->links() }}
                 </div>
             </div>
@@ -236,32 +294,32 @@
 <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
         <h3 class="text-xl font-bold text-gray-800 mb-6">Reject Leave Request</h3>
-<form id="rejectForm" method="POST" action="">
-    @csrf
-    <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-            Reason for Rejection <span class="text-red-600">*</span>
-        </label>
-        <textarea name="reject_reason" id="rejectReasonTextarea" rows="4" required
-                  class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  placeholder="Please explain why this leave request is being rejected..."></textarea>
-    </div>
-    <div class="flex justify-end gap-4">
-        <button type="button" onclick="closeRejectModal()"
-                class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition">
-            Cancel
-        </button>
-        <button type="submit"
-                class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
-            Reject Request
-        </button>
-    </div>
-</form>
+        <form id="rejectForm" method="POST" action="">
+            @csrf
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for Rejection <span class="text-red-600">*</span>
+                </label>
+                <textarea name="reject_reason" id="rejectReasonTextarea" rows="4" required
+                          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          placeholder="Please explain why this leave request is being rejected..."></textarea>
+            </div>
+            <div class="flex justify-end gap-4">
+                <button type="button" onclick="closeRejectModal()"
+                        class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+                    Reject Request
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-function openRejectModal(leaveId) {
+    function openRejectModal(leaveId) {
         document.getElementById('rejectModal').classList.remove('hidden');
         document.getElementById('rejectForm').action = `/hr/leave/${leaveId}/reject`;
         document.getElementById('rejectReasonTextarea').value = '';
@@ -271,13 +329,11 @@ function openRejectModal(leaveId) {
         document.getElementById('rejectModal').classList.add('hidden');
     }
 
-    // Prevent modal close when clicking inside
     document.getElementById('rejectModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeRejectModal();
     });
 
-    // Optional: Client-side validation before submit
-    document.getElementById('rejectForm').addEventListener('submit', function(e) {
+    document.getElementById('rejectForm')?.addEventListener('submit', function(e) {
         const reason = document.getElementById('rejectReasonTextarea').value.trim();
         if (!reason) {
             e.preventDefault();

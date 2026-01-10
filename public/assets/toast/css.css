@@ -1,0 +1,148 @@
+/* Import Google font - Poppins */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* font-family: "Poppins", sans-serif; */
+}
+:root {
+  --dark: #78fad1;
+  --light: #ffffff;
+  --success: #0abf30;
+  --error: #e24d4c;
+  --warning: #e9bd0c;
+  --info: #3498db;
+  --random: #eb43ff;
+}
+.my_custom_toast_alert {
+  position: fixed;
+  top: 30px;
+  right: 20px;
+  z-index: 99999;
+}
+.my_custom_toast_alert :where(.my_toast, .column) {
+  display: flex;
+  align-items: center;
+}
+.my_custom_toast_alert .my_toast {
+  z-index: 99999;
+  width: 400px;
+  position: relative;
+  overflow: hidden;
+  list-style: none;
+  border-radius: 4px;
+  padding: 16px 17px;
+  margin-bottom: 10px;
+  /* box-shadow: 1px 1px 12px #b7b7b7; */
+  box-shadow: 0 0 0.375rem 0.25rem rgba(161, 172, 184, 0.15);
+  background: var(--light);
+  justify-content: space-between;
+  animation: show_my_toast 0.3s ease forwards;
+}
+@keyframes show_my_toast {
+  0% {
+    transform: translateX(100%);
+  }
+  40% {
+    transform: translateX(-5%);
+  }
+  80% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-10px);
+  }
+}
+.my_custom_toast_alert .my_toast.hide {
+  animation: hide_my_toast 0.3s ease forwards;
+}
+@keyframes hide_my_toast {
+  0% {
+    transform: translateX(-10px);
+  }
+  40% {
+    transform: translateX(0%);
+  }
+  80% {
+    transform: translateX(-5%);
+  }
+  100% {
+    transform: translateX(calc(100% + 20px));
+  }
+}
+.my_toast::before {
+  position: absolute;
+  content: "";
+  height: 3px;
+  width: 100%;
+  bottom: 0px;
+  left: 0px;
+  animation: progress 5s linear forwards;
+}
+@keyframes progress {
+  100% {
+    width: 0%;
+  }
+}
+.my_toast.success::before,
+.btn#success {
+  background: var(--success);
+}
+.my_toast.error::before,
+.btn#error {
+  background: var(--error);
+}
+.my_toast.warning::before,
+.btn#warning {
+  background: var(--warning);
+}
+.my_toast.info::before,
+.btn#info {
+  background: var(--info);
+}
+.my_toast.random::before,
+.btn#random {
+  background: var(--random);
+}
+.my_toast .column i {
+  font-size: 1.75rem;
+}
+.my_toast.success .column i {
+  color: var(--success);
+}
+.my_toast.error .column i {
+  color: var(--error);
+}
+.my_toast.warning .column i {
+  color: var(--warning);
+}
+.my_toast.info .column i {
+  color: var(--info);
+}
+.my_toast.random .column i {
+  color: var(--random);
+}
+.my_toast .column span {
+  font-size: 1.07rem;
+  margin-left: 12px;
+}
+.my_toast i:last-child {
+  color: #aeb0d7;
+  cursor: pointer;
+}
+.my_toast i:last-child:hover {
+  color: var(--dark);
+}
+
+
+@media screen and (max-width: 530px) {
+  .my_custom_toast_alert {
+    width: 95%;
+  }
+  .my_custom_toast_alert .my_toast {
+    width: 100%;
+    font-size: 1rem;
+    margin-left: 20px;
+  }
+}
